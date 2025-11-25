@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+        java-version: [17]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install frontend deps
+        working-directory: client
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: client
+        run: npm run build
+      - name: Frontend tests
+        working-directory: client
+        run: npm test -- --ci --runInBand
+
+      - name: Setup Java ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build backend (skip tests if none)
+        working-directory: server
+        run: mvn -q -DskipTests package
+
+      - name: Lint placeholder
+        run: echo "Add lint/test steps here"
+
+      - name: Artifact upload frontend
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: client/dist
+
+      - name: Artifact upload backend jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: server/target/*.jar
