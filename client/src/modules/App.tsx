@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
+import Signup from './Signup';
 import Login from './Login';
 import { useAppDispatch, useAppSelector } from '../store';
 import { selectToken, selectRoles } from '../features/appSlice';
@@ -18,7 +19,7 @@ export default function App() {
   const token = useAppSelector(selectToken);
   const roles = useAppSelector(selectRoles);
     const dispatch = useAppDispatch();
-    return (
+    return ( // gdien chinh
       <>
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
           <div className="container-fluid">
@@ -26,20 +27,38 @@ export default function App() {
             <div className="collapse navbar-collapse">
               <ul className="navbar-nav me-auto">
                 <li className="nav-item"><Link className="nav-link" to="/books">Sách</Link></li>
-  {roles.some(r=>['ADMIN','LIBRARIAN'].includes(r)) && <li className="nav-item"><Link className="nav-link" to="/readers">Bạn đọc</Link></li>}
+  {roles.some(r=>['ADMIN','LIBRARIAN'].includes(r)) && <li className="nav-item"><Link className="nav-link" to="/readers">Bạn đọc</Link></li>} 
   {roles.some(r=>['ADMIN','LIBRARIAN'].includes(r)) && <li className="nav-item"><Link className="nav-link" to="/loans">Mượn/Trả</Link></li>}
   {roles.some(r=>['ADMIN','LIBRARIAN'].includes(r)) && <li className="nav-item"><Link className="nav-link" to="/reports">Báo cáo</Link></li>}
               </ul>
-              <ul className="navbar-nav ms-auto">
-                {!token && <li className="nav-item"><Link className="nav-link" to="/login">Đăng nhập</Link></li>}
-                {token && <li className="nav-item"><button className="btn btn-link nav-link" onClick={()=>{localStorage.removeItem('auth_token');dispatch(logout());}}>Đăng xuất</button></li>}
+              <ul className="navbar-nav ms-auto">   
+                {!token && (
+                  <>
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/login">Đăng nhập</Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/signup">Đăng ký</Link>
+                  </li>
+                  </>
+                )}
+                {token &&(
+                   <li className="nav-item">
+                    <button 
+                    className="btn btn-link nav-link" 
+                    onClick={()=>{localStorage.removeItem('auth_token');dispatch(logout());}}>
+                      Đăng xuất
+                    </button>
+                  </li>
+                )}
               </ul>
             </div>
           </div>
         </nav>
-        <Routes>
+        <Routes> 
           <Route path="/" element={<Home/>} />
           <Route path="/login" element={<Login/>} />
+          <Route path="/signup" element={<Signup/>} />
           <Route path="/books" element={<BookList/>} />
     <Route path="/readers" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><ReadersPage/></RequireRole>} />
     <Route path="/loans" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><LoansPage/></RequireRole>} />
