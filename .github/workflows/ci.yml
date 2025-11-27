@@ -12,7 +12,6 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x]
-        java-version: [17]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,17 +34,6 @@ jobs:
         working-directory: client
         run: npm test -- --ci --runInBand
 
-      - name: Setup Java ${{ matrix.java-version }}
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ matrix.java-version }}
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Build backend (skip tests if none)
-        working-directory: server
-        run: mvn -q -DskipTests package
-
       - name: Lint placeholder
         run: echo "Add lint/test steps here"
 
@@ -54,9 +42,3 @@ jobs:
         with:
           name: frontend-dist
           path: client/dist
-
-      - name: Artifact upload backend jar
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-jar
-          path: server/target/*.jar
