@@ -1,3 +1,10 @@
+// API độc giả - endpoints quản lý độc giả.
+// BACKEND cần:
+//  GET /api/readers -> list
+//  POST /api/readers -> create
+//  PUT /api/readers/{id} -> update
+//  DELETE /api/readers/{id} -> remove
+// TODO BACKEND: endpoint thống kê theo độc giả / top mượn nhiều nhất.
 import axiosClient from './axiosClient';
 
 export interface ReaderDTO { id: number; name: string; email: string; quota: number; }

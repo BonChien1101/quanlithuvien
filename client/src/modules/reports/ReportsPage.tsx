@@ -42,32 +42,36 @@ export default function ReportsPage(){
   };
 
   return <div className="container py-3">
-    <h3>Báo cáo</h3>
-  {loading && <Spinner/>}
-  <ErrorAlert error={error} />
-    <h5>Tồn kho</h5>
-    <table className="table table-sm">
-      <thead><tr><th>Book ID</th><th>Tiêu đề</th><th>Số lượng tồn</th></tr></thead>
-      <tbody>
-        {inventory.map(i=> <tr key={i.bookId}><td>{i.bookId}</td><td>{i.title}</td><td>{i.stock}</td></tr>)}
-      </tbody>
-    </table>
-    <div className="row">
-      <div className="col-md-6">
-        <h6>Tuần</h6>
-        <pre className="bg-light p-2 small">{JSON.stringify(summaryWeek, null, 2)}</pre>
-      </div>
-      <div className="col-md-6">
-        <h6>Tháng</h6>
-        <pre className="bg-light p-2 small">{JSON.stringify(summaryMonth, null, 2)}</pre>
-      </div>
+    <div className="page-header">
+      <h2>Báo cáo</h2>
     </div>
-    <hr/>
-    <h5>Báo cáo theo bạn đọc</h5>
-    <form className="row g-2" onSubmit={fetchReader}>
-      <div className="col-auto"><input className="form-control" value={readerId} onChange={e=>setReaderId(e.target.value)} placeholder="Reader ID"/></div>
-      <div className="col-auto"><button className="btn btn-secondary" disabled={!readerId}>Xem</button></div>
-    </form>
-    {readerReport && <pre className="bg-light p-2 mt-2 small">{JSON.stringify(readerReport, null, 2)}</pre>}
+    {loading && <Spinner/>}
+    <ErrorAlert error={error} />
+    <div className="table-wrap">
+      <h5>Tồn kho</h5>
+      <table className="table table-sm">
+        <thead><tr><th>Book ID</th><th>Tiêu đề</th><th>Số lượng tồn</th></tr></thead>
+        <tbody>
+          {inventory.map(i=> <tr key={i.bookId}><td>{i.bookId}</td><td>{i.title}</td><td>{i.stock}</td></tr>)}
+        </tbody>
+      </table>
+      <div className="row">
+        <div className="col-md-6">
+          <h6>Tuần</h6>
+          <pre className="bg-light p-2 small">{JSON.stringify(summaryWeek, null, 2)}</pre>
+        </div>
+        <div className="col-md-6">
+          <h6>Tháng</h6>
+          <pre className="bg-light p-2 small">{JSON.stringify(summaryMonth, null, 2)}</pre>
+        </div>
+      </div>
+      <hr/>
+      <h5>Báo cáo theo bạn đọc</h5>
+      <form className="row g-2" onSubmit={fetchReader}>
+        <div className="col-auto"><input className="form-control" value={readerId} onChange={e=>setReaderId(e.target.value)} placeholder="Reader ID"/></div>
+        <div className="col-auto"><button className="btn btn-secondary" disabled={!readerId}>Xem</button></div>
+      </form>
+      {readerReport && <pre className="bg-light p-2 mt-2 small">{JSON.stringify(readerReport, null, 2)}</pre>}
+    </div>
   </div>;
 }

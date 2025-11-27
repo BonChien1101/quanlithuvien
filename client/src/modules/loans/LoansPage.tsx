@@ -46,9 +46,20 @@ export default function LoansPage(){
     load();
   };
   const doReturn = async (id: number) => { try { setError(undefined); await loanApi.returnBook(id); load(); } catch(e:any){ setError(e?.message || 'Lỗi trả sách'); } };
+  const updateDue = async (id: number, dueText: string) => {
+    try {
+      setError(undefined);
+      const date = new Date(dueText);
+      if (isNaN(date.getTime())) { setError('Ngày hạn trả không hợp lệ'); return; }
+      await loanApi.updateDue(id, date);
+      load();
+    } catch(e:any){ setError(e?.message || 'Lỗi gia hạn'); }
+  };
 
   return <div className="container py-3">
-    <h3>Quản lý mượn / trả</h3>
+    <div className="page-header">
+      <h2>Mượn/Trả</h2>
+    </div>
     <form className="row g-2" onSubmit={borrow}>
       <div className="col-auto">
         <select className="form-select" value={bookId||''} onChange={e=>setBookId(parseInt(e.target.value))}>
@@ -67,11 +78,28 @@ export default function LoansPage(){
     <hr/>
   {loading && <Spinner/>}
   <ErrorAlert error={error} />
-    <table className="table table-sm">
-      <thead><tr><th>ID</th><th>Sách</th><th>Bạn đọc</th><th>Hạn trả</th><th>Thao tác</th></tr></thead>
-      <tbody>
-  {loans.map(l=> <tr key={l.id}><td>{l.id}</td><td>{l.book?.title}</td><td>{l.reader?.name}</td><td>{l.dueAt ? new Date(l.dueAt).toLocaleDateString(): ''}</td><td>{!l.returnedAt && <button className="btn btn-success btn-sm" onClick={()=>doReturn(l.id)}>Trả</button>}</td></tr>)}
-      </tbody>
-    </table>
+    <div className="table-wrap">
+      <table className="table table-sm">
+        <thead><tr><th>ID</th><th>Sách</th><th>Bạn đọc</th><th>Hạn trả</th><th>Thao tác</th></tr></thead>
+        <tbody>
+  {loans.map(l=> (
+    <tr key={l.id}>
+      <td>{l.id}</td>
+      <td>{l.book?.title}</td>
+      <td>{l.reader?.name}</td>
+      <td>
+        {l.dueAt ? new Date(l.dueAt).toLocaleDateString(): ''}
+        {!l.returnedAt && (
+          <div className="d-flex align-items-center gap-1 mt-1">
+            <input type="date" className="form-control form-control-sm" onChange={(e)=>updateDue(l.id, e.target.value)} />
+          </div>
+        )}
+      </td>
+      <td>{!l.returnedAt && <button className="btn btn-success btn-sm" onClick={()=>doReturn(l.id)}>Trả</button>}</td>
+    </tr>
+  ))}
+        </tbody>
+      </table>
+    </div>
   </div>;
 }
