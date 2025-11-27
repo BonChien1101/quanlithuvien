@@ -11,7 +11,7 @@ export default function ReadersPage(){
   const token = useAppSelector(selectToken);
   const [data, setData] = useState<Reader[]>([]);
   const [name, setName] = useState('');
-  const [quota, setQuota] = useState(5);
+  const [quota, setQuota] = useState(0);
   const [editing, setEditing] = useState<Reader|undefined>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string|undefined>();
@@ -37,7 +37,7 @@ export default function ReadersPage(){
     }
   } catch(e:any){ setError(e?.message || 'Lỗi tạo bạn đọc'); }
     setName('');
-    setQuota(5);
+    setQuota(0);
     setEditing(undefined);
     load();
   };
@@ -46,7 +46,9 @@ export default function ReadersPage(){
   const remove = async (id: number) => { if(!window.confirm('Xóa bạn đọc?')) return; try { await readerApi.remove(id); load(); } catch(e:any){ setError(e?.message || 'Lỗi xóa bạn đọc'); } };
 
   return <div className="container py-3">
-    <h3>Quản lý bạn đọc</h3>
+    <div className="page-header">
+      <h2>Độc giả</h2>
+    </div>
     <form className="row g-2" onSubmit={submit}>
       <div className="col-auto"><input className="form-control" value={name} onChange={e=>setName(e.target.value)} placeholder="Tên bạn đọc"/></div>
       <div className="col-auto"><input type="number" className="form-control" value={quota} onChange={e=>setQuota(parseInt(e.target.value||'0'))} placeholder="Quota"/></div>
@@ -56,11 +58,13 @@ export default function ReadersPage(){
     <hr/>
   {loading && <Spinner/>}
   <ErrorAlert error={error} />
-    <table className="table table-sm">
-      <thead><tr><th>ID</th><th>Tên</th><th>Quota</th><th>Hành động</th></tr></thead>
-      <tbody>
-        {data.map(r=> <tr key={r.id}><td>{r.id}</td><td>{r.name}</td><td>{r.quota}</td><td className="d-flex gap-1"><button className="btn btn-sm btn-outline-primary" onClick={()=>startEdit(r)}>Sửa</button><button className="btn btn-sm btn-outline-danger" onClick={()=>remove(r.id)}>Xóa</button></td></tr>)}
-      </tbody>
-    </table>
+    <div className="table-wrap">
+      <table className="table table-sm">
+        <thead><tr><th>ID</th><th>Tên</th><th></th><th>Hành động</th></tr></thead>
+        <tbody>
+          {data.map(r=> <tr key={r.id}><td>{r.id}</td><td>{r.name}</td><td>{r.quota}</td><td className="d-flex gap-1"><button className="btn btn-sm btn-outline-primary" onClick={()=>startEdit(r)}>Sửa</button><button className="btn btn-sm btn-outline-danger" onClick={()=>remove(r.id)}>Xóa</button></td></tr>)}
+        </tbody>
+      </table>
+    </div>
   </div>;
 }

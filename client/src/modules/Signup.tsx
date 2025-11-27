@@ -29,7 +29,8 @@ export default function Signup(){
       }
     };
     return ( // Giao diện đăng ký
-        <div className="container py-4" style={{ maxWidth: 420 }}>
+        <div className="d-flex align-items-center justify-content-center" style={{ minHeight: 'calc(100vh - 56px)' }}>
+        <div className="form-card" style={{ width: 420, maxWidth: '90vw' }}>
         <h2>Đăng ký</h2>
             <form onSubmit={submit}>
                 <div className="mb-3">
@@ -45,8 +46,11 @@ export default function Signup(){
                     <input type="password" className="form-control" value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} />
                 </div>
                 {error && <div className="alert alert-danger">{error}</div>}
-                <button type="submit" className="btn btn-primary">Đăng ký</button>
+                <div className="form-actions">
+                    <button type="submit" className="btn btn-primary">Đăng ký</button>
+                </div>
             </form>
+        </div>
         </div>
     );
 }

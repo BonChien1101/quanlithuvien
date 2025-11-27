@@ -2,7 +2,7 @@ import axiosClient from './axiosClient';
 
 export interface Category { id?: number; name: string; hidden?: boolean; }
 
-export const categoryApi = {
+export const categoryApi = { // danh muc
   list(){ return axiosClient.get<Category[]>('/api/categories').then(r=>r.data); },
   create(c: Category){ return axiosClient.post<Category>('/api/categories', c).then(r=>r.data); },
   update(id: number, c: Category){ return axiosClient.put<Category>(`/api/categories/${id}`, c).then(r=>r.data); },

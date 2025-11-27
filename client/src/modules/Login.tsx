@@ -16,31 +16,41 @@ export default function Login(){
     e.preventDefault();
     setError(undefined);
     try {
-      const res = await authApi.login({username, password});
-  localStorage.setItem('auth_token', res.token);
-  const { roles } = parseJwt(res.token);
-  dispatch(setAuth({token: res.token, roles}));
-      navigate('/');
+  const res = await authApi.login({username, password});
+  const tokenValue = res.token;
+  localStorage.setItem('auth_token', tokenValue);
+  const parsed = parseJwt(tokenValue) as any;
+  const assignedRoles: string[] = parsed?.roles || [];
+      dispatch(setAuth({ token: tokenValue, roles: assignedRoles }));
+      // Điều hướng: nếu là USER  -> /borrow, ngược lại về /
+      const isManager = assignedRoles.some((r)=>['ADMIN','LIBRARIAN'].includes(r));
+      if(!isManager && assignedRoles.includes('USER')) navigate('/borrow');
+      else navigate('/');
     } catch(err: any){
       setError(err?.response?.data?.message || 'Đăng nhập thất bại');
     }
   };
 
+
   return (
-    <div className="container py-4" style={{maxWidth: 420}}>
-      <h2>Đăng nhập</h2>
-      <form onSubmit={submit}>
-        <div className="mb-3">
-          <label className="form-label">Username</label>
-          <input className="form-control" value={username} onChange={e=>setUsername(e.target.value)} />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Password</label>
-          <input type="password" className="form-control" value={password} onChange={e=>setPassword(e.target.value)} />
-        </div>
-        {error && <div className="alert alert-danger">{error}</div>}
-        <button className="btn btn-primary w-100" type="submit">Đăng nhập</button>
-      </form>
+    <div className="d-flex align-items-center justify-content-center" style={{ minHeight: 'calc(100vh - 56px)' }}>
+      <div className="form-card" style={{ width: 420, maxWidth: '90vw' }}>
+        <h2>Đăng nhập</h2>
+        <form onSubmit={submit}>
+          <div className="mb-3">
+            <label className="form-label">Username</label>
+            <input className="form-control" value={username} onChange={e=>setUsername(e.target.value)} />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Password</label>
+            <input type="password" className="form-control" value={password} onChange={e=>setPassword(e.target.value)} />
+          </div>
+          {error && <div className="alert alert-danger">{error}</div>}
+          <div className="form-actions" style={{ display:'flex', gap:8, justifyContent:'space-between' }}>
+            <button type="submit" className="btn btn-primary">Đăng nhập</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
