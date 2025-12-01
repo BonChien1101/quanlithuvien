@@ -7,7 +7,7 @@ import { parseJwt } from '../utils/jwt';
 
 export default function Login(){
   const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('password');
+  const [password, setPassword] = useState('admin');
   const [error, setError] = useState<string | undefined>();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -15,18 +15,28 @@ export default function Login(){
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(undefined);
-    try {
-  const res = await authApi.login({username, password});
-  const tokenValue = res.token;
-  localStorage.setItem('auth_token', tokenValue);
-  const parsed = parseJwt(tokenValue) as any;
-  const assignedRoles: string[] = parsed?.roles || [];
-      dispatch(setAuth({ token: tokenValue, roles: assignedRoles }));
+      try {
+      console.log('Logging in...', {username, password});
+      const res = await authApi.login({username, password});
+      console.log('Login response:', res);
+      const tokenValue = res.token;
+      localStorage.setItem('auth_token', tokenValue);
+      // Prefer roles returned by API; fall back to roles embedded in JWT
+      const parsed = parseJwt(tokenValue) as any;
+      let assignedRoles: string[] = (res as any).roles || parsed?.roles || [];
+      // Parse roles if it's a JSON string
+      if (typeof assignedRoles === 'string') {
+        assignedRoles = JSON.parse(assignedRoles);
+      }
+      console.log('Assigned roles:', assignedRoles);
+        dispatch(setAuth({ token: tokenValue, roles: assignedRoles }));
       // Điều hướng: nếu là USER  -> /borrow, ngược lại về /
       const isManager = assignedRoles.some((r)=>['ADMIN','LIBRARIAN'].includes(r));
+      console.log('Is manager:', isManager, 'Navigating to:', isManager ? '/' : '/borrow');
       if(!isManager && assignedRoles.includes('USER')) navigate('/borrow');
       else navigate('/');
     } catch(err: any){
+      console.error('Login error:', err);
       setError(err?.response?.data?.message || 'Đăng nhập thất bại');
     }
   };

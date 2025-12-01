@@ -1,9 +1,9 @@
 import axiosClient from './axiosClient';
 
 export interface LoginRequest { username: string; password: string; } //dlieu gui khi dnhap
-export interface LoginResponse { token: string; } // dnhap thanhcong
+export interface LoginResponse { token: string; roles?: string[]; } // dnhap thanhcong
 export interface SignupRequest { username: string; password: string; }  // dlieu khi dki
-export interface SignupResponse { token: string; } // dlieu nhan duoc khi dki thanh cong
+export interface SignupResponse { token: string; roles?: string[]; } // dlieu nhan duoc khi dki thanh cong
 export const authApi = { // API xác thực người dùng
   async login(data: LoginRequest){ // hàm đăng nhập
     try {

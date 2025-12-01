@@ -17,12 +17,14 @@ export default function Dashboard(){
 
   useEffect(()=>{
     const load = async () => {
+      console.log('Dashboard loading...');
       setLoading(true); setError(undefined);
       const results = await Promise.allSettled([
         bookApi.list(),
         readerApi.list(),
         loanApi.list()
       ]);
+      console.log('Dashboard API results:', results);
       const [booksR, readersR, loansR] = results;
       const hasError = results.some(r=>r.status==='rejected');
       if(hasError){
@@ -32,6 +34,7 @@ export default function Dashboard(){
       const books = booksR.status==='fulfilled'?booksR.value:[];
       const readers = readersR.status==='fulfilled'?readersR.value:[];
       const loans = loansR.status==='fulfilled'?loansR.value:[];
+      console.log('Dashboard data:', {books: books.length, readers: readers.length, loans: loans.length});
       setStats([
         { label: 'Độc giả', value: readers.length },
         { label: 'Sách', value: books.length },
@@ -40,6 +43,7 @@ export default function Dashboard(){
       setRecentBooks(books.slice(-5));
       setRecentReaders(readers.slice(-5));
       setLoading(false);
+      console.log('Dashboard loaded successfully');
     };
     load();
   },[]);

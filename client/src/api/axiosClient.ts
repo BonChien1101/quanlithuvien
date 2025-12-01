@@ -14,4 +14,19 @@ axiosClient.interceptors.request.use(config => {
   return config;
 });
 
+// Interceptor để bắt lỗi và lấy message từ backend
+axiosClient.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.data?.message) {
+      // Tạo error mới với message từ backend
+      const customError: any = new Error(error.response.data.message);
+      customError.response = error.response;
+      customError.status = error.response.status;
+      return Promise.reject(customError);
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default axiosClient;

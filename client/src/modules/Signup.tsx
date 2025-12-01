@@ -21,7 +21,9 @@ export default function Signup(){
         try {
         const res = await authApi.signup({username, password});// Gọi API đăng ký
         localStorage.setItem('auth_token', res.token);// Lưu token vào localStorage
-        const { roles } = parseJwt(res.token);
+        // Prefer roles from API when provided, otherwise parse from JWT
+        const parsed = parseJwt(res.token) as any;
+        const roles = (res as any).roles || parsed?.roles || [];
         dispatch(setAuth({token: res.token, roles})); // Cập nhật trạng thái xác thực trong Redux
         navigate('/'); // Chuyển hướng đến trang chủ
       } catch (error: any) {
