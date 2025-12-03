@@ -77,13 +77,10 @@ async function seedData() {
     ], { ignoreDuplicates: true });
     console.log(`✓ Created ${books.length} books`);
 
-    // 3. Tạo users mẫu (bao gồm admin)
+    // 3. admin user
     const users = await User.bulkCreate([
       { username: 'admin', password: 'admin', roles: JSON.stringify(['ADMIN']) },
-      { username: 'user1', password: 'user123', roles: JSON.stringify(['USER']) },
-      { username: 'user2', password: 'user123', roles: JSON.stringify(['USER']) },
-      { username: 'nguyenvana', password: 'password123', roles: JSON.stringify(['USER']) },
-      { username: 'tranthib', password: 'password123', roles: JSON.stringify(['USER']) }
+
     ], { 
       ignoreDuplicates: true,
       individualHooks: true // Để trigger beforeCreate hook (hash password)
@@ -93,8 +90,7 @@ async function seedData() {
     console.log('\n✅ Seed data completed successfully!');
     console.log('\nSample accounts:');
     console.log('  Admin: admin / admin');
-    console.log('  User: user1 / user123');
-    console.log('  User: user2 / user123');
+
     
     process.exit(0);
   } catch (error) {

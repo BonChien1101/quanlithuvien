@@ -21,9 +21,19 @@ const db = { sequelize };
 db.User = require('./user')(sequelize);
 db.Book = require('./book')(sequelize);
 db.Category = require('./category')(sequelize);
+db.Reader = require('./reader')(sequelize);
+db.Loan = require('./loan')(sequelize);
 
 // Define associations
 db.Category.hasMany(db.Book, { foreignKey: 'categoryId', as: 'books' });
 db.Book.belongsTo(db.Category, { foreignKey: 'categoryId', as: 'category' });
+
+// Reader associations
+db.Reader.hasMany(db.Loan, { foreignKey: 'readerId', as: 'loans' });
+db.Loan.belongsTo(db.Reader, { foreignKey: 'readerId', as: 'reader' });
+
+// Book associations
+db.Book.hasMany(db.Loan, { foreignKey: 'bookId', as: 'loans' });
+db.Loan.belongsTo(db.Book, { foreignKey: 'bookId', as: 'book' });
 
 module.exports = db;

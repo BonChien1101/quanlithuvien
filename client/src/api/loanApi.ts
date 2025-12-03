@@ -13,10 +13,10 @@ export interface LoanDTO { id: number; book: any; reader: any; borrowedAt: strin
 export interface NewLoanPayload { bookId: number; readerId: number; }
 
 export const loanApi = {
-  list(){ return axiosClient.get<LoanDTO[]>('/api/loans').then(r=>r.data); },
-  byReader(readerId: number){ return axiosClient.get<LoanDTO[]>(`/api/loans/reader/${readerId}`).then(r=>r.data); },
-  borrow(bookId: number, readerId: number){ return axiosClient.post<LoanDTO>('/api/loans/borrow', null, { params: { bookId, readerId }}).then(r=>r.data); },
-  returnBook(id: number){ return axiosClient.post<LoanDTO>(`/api/loans/${id}/return`, {}).then(r=>r.data); },
-  updateDue(id: number, due: Date){ return axiosClient.put<LoanDTO>(`/api/loans/${id}/due`, null, { params: { epochMilli: due.getTime() }}).then(r=>r.data); },
-  remove(id: number){ return axiosClient.delete<void>(`/api/loans/${id}`).then(r=>r.data); }
+  async list(){ try{ const r= await axiosClient.get<LoanDTO[]>('/api/loans'); return r.data; } catch(e:any){ if(e?.response?.status===404){ const r2= await axiosClient.get<LoanDTO[]>('/loans'); return r2.data; } throw e; } },
+  async byReader(readerId: number){ try{ const r= await axiosClient.get<LoanDTO[]>(`/api/loans/reader/${readerId}`); return r.data; } catch(e:any){ if(e?.response?.status===404){ const r2= await axiosClient.get<LoanDTO[]>(`/loans/reader/${readerId}`); return r2.data; } throw e; } },
+  async borrow(bookId: number, readerId: number, dueAt?: Date){ try{ const r= await axiosClient.post<LoanDTO>('/api/loans/borrow', { bookId, readerId, dueAt: dueAt?.toISOString() }); return r.data; } catch(e:any){ if(e?.response?.status===404){ const r2= await axiosClient.post<LoanDTO>('/loans/borrow', { bookId, readerId, dueAt: dueAt?.toISOString() }); return r2.data; } throw e; } },
+  async returnBook(id: number){ try{ const r= await axiosClient.post<LoanDTO>(`/api/loans/${id}/return`, {}); return r.data; } catch(e:any){ if(e?.response?.status===404){ const r2= await axiosClient.post<LoanDTO>(`/loans/${id}/return`, {}); return r2.data; } throw e; } },
+  async updateDue(id: number, due: Date){ try{ const r= await axiosClient.put<LoanDTO>(`/api/loans/${id}/due`, { dueAt: due.toISOString() }); return r.data; } catch(e:any){ if(e?.response?.status===404){ const r2= await axiosClient.put<LoanDTO>(`/loans/${id}/due`, { dueAt: due.toISOString() }); return r2.data; } throw e; } },
+  async remove(id: number){ try{ const r= await axiosClient.delete<void>(`/api/loans/${id}`); return r.data as any; } catch(e:any){ if(e?.response?.status===404){ const r2= await axiosClient.delete<void>(`/loans/${id}`); return r2.data as any; } throw e; } }
 };

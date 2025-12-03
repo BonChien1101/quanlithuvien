@@ -18,12 +18,11 @@ async function resetAndSeed() {
     const admin = await User.create({
       username: 'admin',
       password: 'admin',
-      roles: ['ADMIN', 'LIBRARIAN']
+      roles: ['ADMIN']
     });
     
     console.log('✓ Admin user created:', admin.username);
     console.log('✓ Roles:', admin.roles);
-    console.log('\nYou can now login with:');
     console.log('  Username: admin');
     console.log('  Password: admin');
     

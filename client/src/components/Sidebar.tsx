@@ -6,6 +6,7 @@ import { selectRoles } from '../features/appSlice';
 export default function Sidebar(){
   const roles = useAppSelector(selectRoles);
   const canManage = roles.some(r=>['ADMIN','LIBRARIAN'].includes(r));
+  const isAdmin = roles.includes('ADMIN');
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">Library</div>
@@ -13,7 +14,7 @@ export default function Sidebar(){
         <NavLink to="/" end className={({isActive})=>`sidebar__link ${isActive?'active':''}`}>
           <span className="sidebar__icon"></span> Dashboard
         </NavLink>
-        {canManage && (
+  {isAdmin && (
           <NavLink to="/users" className={({isActive})=>`sidebar__link ${isActive?'active':''}`}>
             <span className="sidebar__icon"></span> Quản trị hệ thống
           </NavLink>

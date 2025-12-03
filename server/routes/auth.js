@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
+const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change_me';
 
+// Public signup: always USER role
 router.post('/signup', async (req, res) => {
   try {
     const { username, password } = req.body || {};
@@ -12,7 +14,7 @@ router.post('/signup', async (req, res) => {
     // if user exists
     const existing = await User.findOne({ where: { username } });
     if (existing) return res.status(409).json({ message: 'User exists' });
-    const roles = (username === 'admin') ? ['ADMIN'] : ['USER'];
+  const roles = [ROLES.USER];
     const user = await User.create({ username, password, roles });
     const token = jwt.sign({ id: user.id, username: user.username, roles }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, roles });
@@ -25,25 +27,24 @@ router.post('/signup', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
-    console.log('Login attempt:', username);
+  console.log('Yêu cầu đăng nhập:', username);
     
     if (!username || !password) {
-      console.log('Missing credentials');
+  console.log('Thiếu thông tin đăng nhập');
       return res.status(400).json({ message: 'Missing credentials' });
     }
     
     const user = await User.findOne({ where: { username } });
     if (!user) {
-      console.log('User not found:', username);
+  console.log('Không tìm thấy người dùng:', username);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
     
-    console.log('User found:', username, 'checking password...');
-    const ok = await user.validatePassword(password);
-    console.log('Password valid:', ok);
+  console.log('Đã tìm thấy người dùng, đang kiểm tra mật khẩu...');
+  const ok = await user.validatePassword(password);
     
     if (!ok) {
-      console.log('Invalid password for user:', username);
+  console.log('Mật khẩu không đúng cho người dùng:', username);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
     
@@ -52,12 +53,31 @@ router.post('/login', async (req, res) => {
     if (typeof roles === 'string') {
       roles = JSON.parse(roles);
     }
-    console.log('Creating token for user:', username, 'roles:', roles);
+  console.log('Tạo token cho người dùng với vai trò:', roles);
     const token = jwt.sign({ id: user.id, username: user.username, roles }, JWT_SECRET, { expiresIn: '7d' });
-    console.log('Login successful:', username);
+  console.log('Đăng nhập thành công:', username);
     res.json({ token, roles });
   } catch (err) {
-    console.error('Login error:', err);
+  console.error('Lỗi đăng nhập:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Admin creates user with role LIBRARIAN or USER
+router.post('/admin/create-user', authenticate, requireRole([ROLES.ADMIN]), async (req, res) => {
+  try {
+    const { username, password, role } = req.body || {};
+    if (!username || !password || !role) return res.status(400).json({ message: 'Missing fields' });
+    if (![ROLES.LIBRARIAN, ROLES.USER].includes(role)) {
+      return res.status(400).json({ message: 'Invalid role. Only LIBRARIAN or USER allowed.' });
+    }
+    const existing = await User.findOne({ where: { username } });
+    if (existing) return res.status(409).json({ message: 'User exists' });
+    const roles = [role];
+    const user = await User.create({ username, password, roles });
+    res.status(201).json({ id: user.id, username: user.username, roles });
+  } catch (err) {
+  console.error('Lỗi admin tạo tài khoản:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });

@@ -47,7 +47,7 @@ export default function App() {
               <Route path="/signup" element={<Signup/>} />
               <Route path="/books" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><BookList/></RequireRole>} />
               <Route path="/categories" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><CategoriesPage/></RequireRole>} />
-              <Route path="/users" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><UsersPage/></RequireRole>} />
+              <Route path="/users" element={<RequireRole roles={['ADMIN']}><UsersPage/></RequireRole>} />
               <Route path="/readers" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><ReadersPage/></RequireRole>} />
               <Route path="/loans" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><LoansPage/></RequireRole>} />
               <Route path="/reports" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><ReportsPage/></RequireRole>} />
