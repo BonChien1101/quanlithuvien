@@ -11,6 +11,7 @@ export default function BookList(){
   // search filter state
   const [filterTitle, setFilterTitle] = useState(''); // Bộ lọc tiêu đề (gửi lên /api/books/search)
   const [filterAuthor, setFilterAuthor] = useState(''); // Bộ lọc tác giả (gửi lên /api/books/search)
+  const [showHidden, setShowHidden] = useState(false); // Hiển thị sách đã ẩn
   const [editing, setEditing] = useState<BookDTO|undefined>();
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -51,7 +52,22 @@ export default function BookList(){
   // Xóa sách -> gọi DELETE BACKEND
   const remove = async (id: number) => {
     if(!window.confirm('Xóa sách này?')) return;
-    try { await bookApi.remove(id); load(); } catch(e:any){ setError(e?.message || 'Lỗi xóa sách'); }
+    try { 
+      setError(undefined);
+      await bookApi.remove(id); 
+      load(); 
+    } catch(e:any){ setError(e?.message || 'Lỗi xóa sách'); }
+  };
+
+  // Toggle ẩn/hiện sách
+  const toggleHidden = async (id: number, currentHidden: boolean) => {
+    try {
+      setError(undefined);
+      await bookApi.toggle(id);
+      load();
+    } catch(e:any){ 
+      setError(e?.message || 'Lỗi thay đổi trạng thái sách'); 
+    }
   };
 
   return (
@@ -66,23 +82,50 @@ export default function BookList(){
           <div className="col"><input placeholder="Lọc tiêu đề" className="form-control" value={filterTitle} onChange={e=>setFilterTitle(e.target.value)} /></div>
           <div className="col"><input placeholder="Lọc tác giả" className="form-control" value={filterAuthor} onChange={e=>setFilterAuthor(e.target.value)} /></div>
           <div className="col-auto"><button className="btn btn-primary" onClick={load}>Tìm kiếm</button></div>
+          <div className="col-auto">
+            <div className="form-check">
+              <input 
+                className="form-check-input" 
+                type="checkbox" 
+                id="showHidden"
+                checked={showHidden} 
+                onChange={e=>setShowHidden(e.target.checked)} 
+              />
+              <label className="form-check-label" htmlFor="showHidden">
+                Hiện sách đã ẩn
+              </label>
+            </div>
+          </div>
         </div>
         {loading && <Spinner/>}
         <ErrorAlert error={error} />
         <table className="table table-striped">
-          <thead><tr><th>Mã</th><th>Tiêu đề</th><th>Tác giả</th><th>Tồn kho</th><th>Ẩn</th><th>Hành động</th></tr></thead>
+          <thead><tr><th>Mã</th><th>Tiêu đề</th><th>Tác giả</th><th>Tồn kho</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
           <tbody>
-            {books.map(b => (
-              <tr key={b.id}>
+            {books.filter(b => showHidden || !b.hidden).map(b => (
+              <tr key={b.id} className={b.hidden ? 'table-secondary text-muted' : ''}>
                 <td>{b.code}</td>
                 <td>{b.title}</td>
                 <td>{b.author}</td>
                 <td>{b.stock}</td>
-                <td>{b.hidden ? 'Có' : 'Không'}</td>
+                <td>
+                  {b.hidden ? (
+                    <span className="badge bg-secondary">Đã ẩn</span>
+                  ) : (
+                    <span className="badge bg-success">Hiển thị</span>
+                  )}
+                </td>
                 <td className="d-flex gap-1">
                   <button type="button" className="btn btn-sm btn-outline-primary" onClick={()=>startEdit(b)}>Sửa</button>
                   {/* Toggle ẩn/hiện -> BACKEND POST /api/books/{id}/toggle */}
-                  <button type="button" className="btn btn-sm btn-outline-warning" onClick={async ()=>{ await bookApi.toggle(b.id); load(); }}>Ẩn/Hiện</button>
+                  <button 
+                    type="button" 
+                    className={`btn btn-sm ${b.hidden ? 'btn-success' : 'btn-outline-warning'}`}
+                    onClick={()=>toggleHidden(b.id, b.hidden || false)}
+                    title={b.hidden ? 'Hiện sách' : 'Ẩn sách'}
+                  >
+                    {b.hidden ? 'Hiện' : 'Ẩn'}
+                  </button>
                   {/* Gọi DELETE BACKEND */}
                   <button type="button" className="btn btn-sm btn-outline-danger" onClick={()=>remove(b.id)}>Xóa</button>
                 </td>

@@ -44,16 +44,29 @@ export default function CategoriesPage(){
       <ErrorAlert error={error} />
       <div className="table-wrap mt-3">
         <table className="table table-striped">
-          <thead><tr><th>ID</th><th>Tên</th><th>Ẩn</th><th>Hành động</th></tr></thead>
+          <thead><tr><th>STT</th><th>Mã</th><th>Tên</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
           <tbody>
-            {items.map(c=> (
-              <tr key={c.id}>
+            {items.map((c, index)=> (
+              <tr key={c.id} className={c.hidden ? 'table-secondary text-muted' : ''}>
+                <td>{index + 1}</td>
                 <td>{c.id}</td>
                 <td>{c.name}</td>
-                <td>{c.hidden ? 'Có' : 'Không'}</td>
+                <td>
+                  {c.hidden ? (
+                    <span className="badge bg-secondary">Đã ẩn</span>
+                  ) : (
+                    <span className="badge bg-success">Hiển thị</span>
+                  )}
+                </td>
                 <td className="d-flex gap-1">
                   <button className="btn btn-sm btn-outline-primary" onClick={()=>startEdit(c)}>Sửa</button>
-                  <button className="btn btn-sm btn-outline-warning" onClick={()=>toggle(c.id!)}>Ẩn/Hiện</button>
+                  <button 
+                    className={`btn btn-sm ${c.hidden ? 'btn-success' : 'btn-outline-warning'}`}
+                    onClick={()=>toggle(c.id!)}
+                    title={c.hidden ? 'Hiện danh mục' : 'Ẩn danh mục'}
+                  >
+                    {c.hidden ? 'Hiện' : 'Ẩn'}
+                  </button>
                   <button className="btn btn-sm btn-outline-danger" onClick={()=>remove(c.id!)}>Xóa</button>
                 </td>
               </tr>
