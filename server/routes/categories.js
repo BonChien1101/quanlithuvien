@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Category } = require('../models');
+const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 
 // GET all categories
 router.get('/', async (req, res) => {
@@ -10,7 +11,7 @@ router.get('/', async (req, res) => {
     });
     res.json(categories);
   } catch (error) {
-    console.error('Error fetching categories:', error);
+    console.error('Lỗi lấy danh sách thể loại:', error);
     res.status(500).json({ message: 'Lỗi khi lấy danh sách thể loại' });
   }
 });
@@ -26,13 +27,13 @@ router.get('/:id', async (req, res) => {
     }
     res.json(category);
   } catch (error) {
-    console.error('Error fetching category:', error);
+    console.error('Lỗi lấy thông tin thể loại:', error);
     res.status(500).json({ message: 'Lỗi khi lấy thông tin thể loại' });
   }
 });
 
 // POST create new category
-router.post('/', async (req, res) => {
+router.post('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const { name, description } = req.body;
     if (!name) {
@@ -48,13 +49,13 @@ router.post('/', async (req, res) => {
     const category = await Category.create({ name, description });
     res.status(201).json(category);
   } catch (error) {
-    console.error('Error creating category:', error);
+    console.error('Lỗi tạo thể loại:', error);
     res.status(500).json({ message: 'Lỗi khi tạo thể loại' });
   }
 });
 
 // PUT update category
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const category = await Category.findByPk(req.params.id);
     if (!category) {
@@ -79,13 +80,13 @@ router.put('/:id', async (req, res) => {
     await category.update({ name, description });
     res.json(category);
   } catch (error) {
-    console.error('Error updating category:', error);
+    console.error('Lỗi cập nhật thể loại:', error);
     res.status(500).json({ message: 'Lỗi khi cập nhật thể loại' });
   }
 });
 
 // POST toggle hidden status
-router.post('/:id/toggle', async (req, res) => {
+router.post('/:id/toggle', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const category = await Category.findByPk(req.params.id);
     if (!category) {
@@ -94,13 +95,13 @@ router.post('/:id/toggle', async (req, res) => {
     await category.update({ hidden: !category.hidden });
     res.json(category);
   } catch (error) {
-    console.error('Error toggling category:', error);
+    console.error('Lỗi thay đổi trạng thái thể loại:', error);
     res.status(500).json({ message: 'Lỗi khi thay đổi trạng thái thể loại' });
   }
 });
 
 // DELETE category
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const category = await Category.findByPk(req.params.id);
     if (!category) {
@@ -109,7 +110,7 @@ router.delete('/:id', async (req, res) => {
     await category.destroy();
     res.json({ message: 'Đã xóa thể loại' });
   } catch (error) {
-    console.error('Error deleting category:', error);
+    console.error('Lỗi xóa thể loại:', error);
     res.status(500).json({ message: 'Lỗi khi xóa thể loại' });
   }
 });

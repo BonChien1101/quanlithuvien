@@ -1,6 +1,13 @@
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'change_me';
 
+// Role constants
+const ROLES = {
+  ADMIN: 'ADMIN',
+  LIBRARIAN: 'LIBRARIAN',
+  USER: 'USER'
+};
+
 // Middleware xác thực token
 function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -36,4 +43,4 @@ function requireRole(allowedRoles = []) {
   };
 }
 
-module.exports = { authenticate, requireRole };
+module.exports = { authenticate, requireRole, ROLES };

@@ -1,8 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const { User } = require('../models');
-const { authenticate, requireRole } = require('../middleware/auth');
+const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 
+// Admin tạo tài khoản Librarian/User
+router.post('/', authenticate, requireRole([ROLES.ADMIN]), async (req, res) => {
+  try {
+    const { username, password, role } = req.body || {};
+    if (!username || !password || !role) return res.status(400).json({ message: 'Thiếu thông tin' });
+    if (![ROLES.LIBRARIAN, ROLES.USER].includes(role)) {
+      return res.status(400).json({ message: 'Chỉ được tạo LIBRARIAN hoặc USER' });
+    }
+    const existing = await User.findOne({ where: { username } });
+    if (existing) return res.status(409).json({ message: 'Username đã tồn tại' });
+    const roles = [role];
+    const user = await User.create({ username, password, roles });
+    res.status(201).json({ id: user.id, username: user.username, roles });
+  } catch (err) {
+    console.error('Lỗi tạo tài khoản:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 // Chỉ admin mới xem được danh sách users
 router.get('/', authenticate, requireRole(['ADMIN']), async (req, res) => {
   try {
@@ -14,7 +32,7 @@ router.get('/', authenticate, requireRole(['ADMIN']), async (req, res) => {
     });
     res.json(usersWithParsedRoles);
   } catch (err) {
-    console.error(err);
+    console.error('Lỗi lấy danh sách người dùng:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -22,16 +40,39 @@ router.get('/', authenticate, requireRole(['ADMIN']), async (req, res) => {
 // DELETE user (admin only)
 router.delete('/:id', authenticate, requireRole(['ADMIN']), async (req, res) => {
   try {
-    const user = await User.findByPk(req.params.id);
-    if (!user) {
+    const targetUser = await User.findByPk(req.params.id);
+    if (!targetUser) {
       return res.status(404).json({ message: 'Không tìm thấy user' });
     }
-    await user.destroy();
+
+    // Không cho tự xóa chính mình
+    if (String(targetUser.id) === String(req.user.id)) {
+      return res.status(400).json({ message: 'Không thể tự xóa chính mình' });
+    }
+
+    // Parse roles for both requester and target
+    const targetRoles = typeof targetUser.roles === 'string' ? JSON.parse(targetUser.roles) : targetUser.roles;
+
+    // Nếu đang xóa một ADMIN, kiểm tra số lượng ADMIN còn lại
+    if (Array.isArray(targetRoles) && targetRoles.includes(ROLES.ADMIN)) {
+      const allUsers = await User.findAll({ attributes: ['id', 'roles'] });
+      let adminCount = 0;
+      for (const u of allUsers) {
+        const r = typeof u.roles === 'string' ? JSON.parse(u.roles) : u.roles;
+        if (Array.isArray(r) && r.includes(ROLES.ADMIN)) adminCount++;
+      }
+      if (adminCount <= 1) {
+        return res.status(400).json({ message: 'Không thể xóa tài khoản ADMIN cuối cùng' });
+      }
+    }
+
+    await targetUser.destroy();
     res.json({ message: 'Đã xóa user' });
   } catch (err) {
-    console.error(err);
+    console.error('Lỗi xóa người dùng:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 module.exports = router;

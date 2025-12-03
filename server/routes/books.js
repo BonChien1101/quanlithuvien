@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Book, Category } = require('../models');
 const { Op } = require('sequelize');
+const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 
 // GET all books with optional category filter
 router.get('/', async (req, res) => {
@@ -20,7 +21,7 @@ router.get('/', async (req, res) => {
     });
     res.json(books);
   } catch (err) {
-    console.error(err);
+    console.error('Lỗi lấy danh sách sách:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -49,7 +50,7 @@ router.get('/search', async (req, res) => {
     });
     res.json(books);
   } catch (err) {
-    console.error(err);
+    console.error('Lỗi tìm kiếm sách:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -69,13 +70,13 @@ router.get('/:id', async (req, res) => {
     }
     res.json(book);
   } catch (err) {
-    console.error(err);
+    console.error('Lỗi lấy thông tin sách:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
 // POST create new book
-router.post('/', async (req, res) => {
+router.post('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const { code, title, author, stock, categoryId } = req.body;
     if (!title) {
@@ -84,13 +85,13 @@ router.post('/', async (req, res) => {
     const book = await Book.create({ code, title, author, stock: stock || 0, categoryId });
     res.status(201).json(book);
   } catch (err) {
-    console.error(err);
+    console.error('Lỗi tạo sách:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
 // PUT update book
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const book = await Book.findByPk(req.params.id);
     if (!book) {
@@ -100,13 +101,13 @@ router.put('/:id', async (req, res) => {
     await book.update({ code, title, author, stock, categoryId });
     res.json(book);
   } catch (err) {
-    console.error(err);
+    console.error('Lỗi cập nhật sách:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
 // POST toggle hidden status
-router.post('/:id/toggle', async (req, res) => {
+router.post('/:id/toggle', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const book = await Book.findByPk(req.params.id);
     if (!book) {
@@ -115,13 +116,13 @@ router.post('/:id/toggle', async (req, res) => {
     await book.update({ hidden: !book.hidden });
     res.json(book);
   } catch (err) {
-    console.error(err);
+    console.error('Lỗi thay đổi trạng thái sách:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
 // DELETE book
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const book = await Book.findByPk(req.params.id);
     if (!book) {
@@ -130,7 +131,7 @@ router.delete('/:id', async (req, res) => {
     await book.destroy();
     res.json({ message: 'Đã xóa sách' });
   } catch (err) {
-    console.error(err);
+    console.error('Lỗi xóa sách:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });

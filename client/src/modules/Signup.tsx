@@ -5,19 +5,26 @@ import { useAppDispatch } from '../store';
 import { setAuth } from '../features/appSlice';
 import { parseJwt } from '../utils/jwt';
 export default function Signup(){  
-    const [username, setUsername] = useState('admin'); // State cho tendn
-    const [password, setPassword] = useState('password'); // State cho mk
-    const [passwordConfirm, setPasswordConfirm] = useState('password'); // state xnhan mk
+    const [username, setUsername] = useState(''); // State cho tendn
+    const [password, setPassword] = useState(''); // State cho mk
+    const [passwordConfirm, setPasswordConfirm] = useState(''); // state xnhan mk
     const [error, setError] = useState<string | undefined>(); // lỗi
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate(); // điều hướng
     const dispatch = useAppDispatch(); // Lấy hàm dispatch từ Redux
 
     const submit = async (e: React.FormEvent) => { // Xử lý đăng ký
         e.preventDefault();
+        setError(undefined);
+        if (!username || !password) {
+            setError('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu');
+            return;
+        }
         if (password !== passwordConfirm) {
             setError('Mật khẩu không khớp');
             return;
         }
+        setLoading(true);
         try {
         const res = await authApi.signup({username, password});// Gọi API đăng ký
         localStorage.setItem('auth_token', res.token);// Lưu token vào localStorage
@@ -28,6 +35,8 @@ export default function Signup(){
         navigate('/'); // Chuyển hướng đến trang chủ
       } catch (error: any) {
         setError(error?.message || 'Đăng ký thất bại');
+            } finally {
+                setLoading(false);
       }
     };
     return ( // Giao diện đăng ký
@@ -41,15 +50,15 @@ export default function Signup(){
                 </div>
                 <div className="mb-3">
                     <label className="form-label">Mật khẩu</label>
-                    <input type="password" className="form-control" value={password} onChange={e => setPassword(e.target.value)} />
+                    <input type="password" className="form-control" value={password} onChange={e => setPassword(e.target.value)} required />
                 </div>
                 <div className="mb-3">
                     <label className="form-label">Xác nhận mật khẩu</label>
-                    <input type="password" className="form-control" value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} />
+                    <input type="password" className="form-control" value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} required />
                 </div>
                 {error && <div className="alert alert-danger">{error}</div>}
                 <div className="form-actions">
-                    <button type="submit" className="btn btn-primary">Đăng ký</button>
+                    <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Đang đăng ký...' : 'Đăng ký'}</button>
                 </div>
             </form>
         </div>
