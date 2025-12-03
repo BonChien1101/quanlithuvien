@@ -79,8 +79,7 @@ async function seedData() {
 
     // 3. Tạo users mẫu (bao gồm admin)
     const users = await User.bulkCreate([
-      { username: 'admin', password: 'admin', roles: JSON.stringify(['ADMIN', 'LIBRARIAN']) },
-      { username: 'librarian1', password: 'librarian123', roles: JSON.stringify(['LIBRARIAN']) },
+      { username: 'admin', password: 'admin', roles: JSON.stringify(['ADMIN']) },
       { username: 'user1', password: 'user123', roles: JSON.stringify(['USER']) },
       { username: 'user2', password: 'user123', roles: JSON.stringify(['USER']) },
       { username: 'nguyenvana', password: 'password123', roles: JSON.stringify(['USER']) },
@@ -94,7 +93,6 @@ async function seedData() {
     console.log('\n✅ Seed data completed successfully!');
     console.log('\nSample accounts:');
     console.log('  Admin: admin / admin');
-    console.log('  Librarian: librarian1 / librarian123');
     console.log('  User: user1 / user123');
     console.log('  User: user2 / user123');
     
