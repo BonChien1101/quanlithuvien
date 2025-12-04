@@ -5,6 +5,9 @@ import { ErrorAlert } from '../../components/ErrorAlert';
 
 export default function CategoriesPage(){
   const [items, setItems] = useState<Category[]>([]);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [qName, setQName] = useState('');
   const [name, setName] = useState('');
   const [editing, setEditing] = useState<Category|undefined>();
   const [loading, setLoading] = useState(false);
@@ -12,11 +15,17 @@ export default function CategoriesPage(){
 
   const load = async () => {
     setLoading(true); setError(undefined);
-    try { const data = await categoryApi.list(); setItems(data); }
+    try {
+      const axios = (await import('../../api/axiosClient')).default;
+  const rs = await axios.get('/api/categories', { params: { page, limit, q: qName || undefined } });
+      const data = Array.isArray(rs.data) ? rs.data : (rs.data?.items ?? []);
+      setItems(data);
+    }
     catch(e:any){ setError(e?.message || 'Lỗi tải danh mục'); }
     finally { setLoading(false); }
   };
-  useEffect(()=>{ load(); },[]);
+  useEffect(()=>{ load(); },[page, qName, limit]);
+  useEffect(()=>{ setPage(1); }, [limit]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); if(!name.trim()) return;
@@ -43,14 +52,21 @@ export default function CategoriesPage(){
       {loading && <Spinner/>}
       <ErrorAlert error={error} />
       <div className="table-wrap mt-3">
+        <div className="row g-2 mb-2">
+          <div className="col">
+            <input className="form-control form-control-sm" placeholder="Tìm theo tên danh mục" value={qName} onChange={e=>{ setQName(e.target.value); setPage(1); }} />
+          </div>
+        </div>
         <table className="table table-striped">
-          <thead><tr><th>STT</th><th>Mã</th><th>Tên</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+          <thead><tr><th>Mã</th><th>Tên</th><th>Số sách</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
           <tbody>
-            {items.map((c, index)=> (
+            {items
+              .filter(c => !qName ? true : (c.name||'').toLowerCase().includes(qName.toLowerCase()))
+              .map((c)=> (
               <tr key={c.id} className={c.hidden ? 'table-secondary text-muted' : ''}>
-                <td>{index + 1}</td>
                 <td>{c.id}</td>
                 <td>{c.name}</td>
+                <td>{c.bookCount ?? 0}</td>
                 <td>
                   {c.hidden ? (
                     <span className="badge bg-secondary">Đã ẩn</span>
@@ -73,6 +89,24 @@ export default function CategoriesPage(){
             ))}
           </tbody>
         </table>
+        <div className="d-flex justify-content-between align-items-center mt-2">
+          <div className="d-flex align-items-center gap-2">
+            <button className="btn btn-sm btn-outline-secondary" onClick={()=>{ if(page>1){ setPage(p=>p-1); } }} disabled={page<=1}>Trước</button>
+            <span>Trang {page}</span>
+            <button className="btn btn-sm btn-outline-secondary" onClick={()=>{ setPage(p=>p+1); }} disabled={items.filter(c => !qName ? true : (c.name||'').toLowerCase().includes(qName.toLowerCase())).length < limit}>
+              Sau
+            </button>
+          </div>
+          <div className="d-flex align-items-center gap-2">
+            <span>Hiện thị</span>
+            <select className="form-select form-select-sm" style={{width:'auto'}} value={limit} onChange={e=>setLimit(parseInt(e.target.value))}>
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   );

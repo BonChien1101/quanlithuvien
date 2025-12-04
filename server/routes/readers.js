@@ -8,6 +8,9 @@ const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 router.get('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const { q } = req.query;
+    const page = Math.max(parseInt(String(req.query.page || 1), 10), 1);
+    const limit = Math.max(parseInt(String(req.query.limit || 10), 10), 1);
+    const offset = (page - 1) * limit;
     const term = q && String(q).trim();
     const where = term ? { [Op.or]: [
       { name: { [Op.like]: `%${term}%` } },
@@ -25,9 +28,9 @@ router.get('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async
         { [Op.like]: `%${String(term).replace(/[-\s]/g,'')}%` }
       )
     ] } : {};
-  const readers = await Reader.findAll({ where, order: [['id','ASC']] });
+  const { rows, count } = await Reader.findAndCountAll({ where, order: [['id','ASC']], limit, offset });
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.json(readers);
+  res.json({ items: rows, total: count, page, pageCount: Math.max(Math.ceil(count/limit),1), limit });
   } catch (err) {
     console.error('Lỗi lấy danh sách độc giả:', err);
     res.status(500).json({ message: 'Lỗi máy chủ' });
@@ -51,24 +54,32 @@ router.get('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), as
 router.post('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const { name, contact, quota, phone, email, gender, dob, address, note } = req.body || {};
-  // Require all fields to be provided (non-empty)
-  if (!name || !String(name).trim()) return res.status(400).json({ message: 'Thiếu tên độc giả' });
-  if (!contact || !String(contact).trim()) return res.status(400).json({ message: 'Thiếu thông tin liên hệ' });
-  if (!phone || !String(phone).trim()) return res.status(400).json({ message: 'Thiếu số điện thoại' });
-  if (!email || !String(email).trim()) return res.status(400).json({ message: 'Thiếu email' });
-  if (!gender || !String(gender).trim()) return res.status(400).json({ message: 'Thiếu giới tính' });
-  if (!dob || !String(dob).trim()) return res.status(400).json({ message: 'Thiếu ngày sinh' });
-  if (!address || !String(address).trim()) return res.status(400).json({ message: 'Thiếu địa chỉ' });
-  if (note == null || !String(note).trim()) return res.status(400).json({ message: 'Thiếu ghi chú' });
-  if (quota == null) return res.status(400).json({ message: 'Thiếu quota' });
-  if (Number(quota) < 0) return res.status(400).json({ message: 'Quota không hợp lệ' });
-  // Field validations
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) return res.status(400).json({ message: 'Email không hợp lệ' });
-  if (!['Nam','Nữ','Khác'].includes(String(gender))) return res.status(400).json({ message: 'Giới tính không hợp lệ' });
-  if (String(phone).length > 20) return res.status(400).json({ message: 'SĐT quá dài' });
-  const dobDate = new Date(String(dob));
-  if (isNaN(dobDate.getTime())) return res.status(400).json({ message: 'Ngày sinh không hợp lệ' });
-  const reader = await Reader.create({ name: String(name).trim(), contact: String(contact).trim(), quota: Number(quota), phone: String(phone).trim(), email: String(email).trim(), gender: String(gender), dob: String(dob), address: String(address).trim(), note: String(note).trim() });
+    // Bắt buộc các trường (ngoại trừ ghi chú là tùy chọn)
+    if (!name || !String(name).trim()) return res.status(400).json({ message: 'Thiếu tên độc giả' });
+    if (!phone || !String(phone).trim()) return res.status(400).json({ message: 'Thiếu số điện thoại' });
+    if (!email || !String(email).trim()) return res.status(400).json({ message: 'Thiếu email' });
+    if (!gender || !String(gender).trim()) return res.status(400).json({ message: 'Thiếu giới tính' });
+    if (!dob || !String(dob).trim()) return res.status(400).json({ message: 'Thiếu ngày sinh' });
+    if (!address || !String(address).trim()) return res.status(400).json({ message: 'Thiếu địa chỉ' });
+    if (quota == null) return res.status(400).json({ message: 'Thiếu quota' });
+    if (Number(quota) < 0) return res.status(400).json({ message: 'Quota không hợp lệ' });
+    // Validate giá trị
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) return res.status(400).json({ message: 'Email không hợp lệ' });
+    if (!['male','female','other'].includes(String(gender))) return res.status(400).json({ message: 'Giới tính không hợp lệ' });
+    if (String(phone).length > 20) return res.status(400).json({ message: 'SĐT quá dài' });
+    const dobDate = new Date(String(dob));
+    if (isNaN(dobDate.getTime())) return res.status(400).json({ message: 'Ngày sinh không hợp lệ' });
+    const reader = await Reader.create({
+      name: String(name).trim(),
+      contact: contact != null && String(contact).trim() ? String(contact).trim() : null,
+      phone: String(phone).trim(),
+      email: String(email).trim(),
+      gender: String(gender),
+      dob: String(dob),
+      address: String(address).trim(),
+      quota: Number(quota),
+      note: note != null && String(note).trim() ? String(note).trim() : null,
+    });
     res.status(201).json(reader);
   } catch (err) {
     console.error('Lỗi tạo độc giả:', err);

@@ -10,6 +10,10 @@ type Reader = ReaderDTO;
 export default function ReadersPage(){
   const token = useAppSelector(selectToken);
   const [data, setData] = useState<Reader[]>([]);
+  const [qName, setQName] = useState('');
+  const [qPhone, setQPhone] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [form, setForm] = useState<NewReaderPayload>({ name: '', quota: 3 });
   const [editing, setEditing] = useState<Reader|undefined>();
   const [showModal, setShowModal] = useState(false);
@@ -20,11 +24,20 @@ export default function ReadersPage(){
   const load = async () => {
     setLoading(true);
     try {
-  const rs = await readerApi.list();
-  setData(rs);
+  const axios = (await import('../../api/axiosClient')).default;
+  const keyword = (qName || qPhone) ? (qName || qPhone) : undefined;
+  const rs = await axios.get('/api/readers', { params: { page, limit, q: keyword } });
+  let list = Array.isArray(rs.data) ? rs.data : (rs.data?.items ?? []);
+  if (qName && qPhone) {
+    const phoneKey = qPhone.toLowerCase();
+    list = list.filter((r:any)=> String(r.phone||'').toLowerCase().includes(phoneKey));
+  }
+  setData(list);
     } finally { setLoading(false); }
   };
-  useEffect(()=>{ load(); }, [token]);
+  useEffect(()=>{ load(); }, [token, page, qName]);
+  useEffect(()=>{ load(); }, [token, page, qPhone]);
+  useEffect(()=>{ setPage(1); }, [limit]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,12 +86,19 @@ export default function ReadersPage(){
   {loading && <Spinner/>}
   <ErrorAlert error={error} />
     <div className="table-wrap">
+      <div className="row g-2 p-2">
+        <div className="col">
+          <input className="form-control form-control-sm" placeholder="Tên độc giả" value={qName} onChange={e=>{ setQName(e.target.value); setPage(1); }} />
+        </div>
+        <div className="col">
+          <input className="form-control form-control-sm" placeholder="SĐT" value={qPhone} onChange={e=>{ setQPhone(e.target.value); setPage(1); }} />
+        </div>
+      </div>
       <div className="table-responsive">
       <table className="table table-sm align-middle mb-0">
-  <thead><tr><th>STT</th><th>Mã</th><th>Tên</th><th>SĐT</th><th>Email</th><th>Giới tính</th><th>Ngày sinh</th><th>Quota</th><th>Thao tác</th></tr></thead>
+  <thead><tr><th>Mã</th><th>Tên</th><th>SĐT</th><th>Email</th><th>Giới tính</th><th>Ngày sinh</th><th>Quota</th><th>Thao tác</th></tr></thead>
         <tbody>
-          {data.map((r, index)=> <tr key={r.id}>
-            <td>{index + 1}</td>
+          {data.map((r)=> <tr key={r.id}>
             <td>{r.id}</td>
             <td>{r.name}</td>
             <td>{(r as any).phone || '-'}</td>
@@ -93,6 +113,22 @@ export default function ReadersPage(){
           </tr>)}
         </tbody>
       </table>
+      </div>
+      <div className="d-flex justify-content-between align-items-center mt-2">
+        <div className="d-flex align-items-center gap-2">
+          <button className="btn btn-sm btn-outline-secondary" onClick={()=>{ if(page>1){ setPage(p=>p-1); } }} disabled={page<=1}>Trước</button>
+          <span>Trang {page}</span>
+          <button className="btn btn-sm btn-outline-secondary" onClick={()=>{ setPage(p=>p+1); }} disabled={data.length < limit}>Sau</button>
+        </div>
+        <div className="d-flex align-items-center gap-2">
+          <span>Hiện thị</span>
+          <select className="form-select form-select-sm" style={{width:'auto'}} value={limit} onChange={e=>setLimit(parseInt(e.target.value))}>
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+          </select>
+        </div>
       </div>
     </div>
     </div>

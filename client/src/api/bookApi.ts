@@ -8,20 +8,44 @@
 //  DELETE /api/books/{id} -> remove()
 import axiosClient from './axiosClient';
 
-export interface BookDTO { id: number; code: string; title: string; author: string; imageUrl?: string; category?: { id: number }; stock: number; hidden?: boolean; }
-export interface NewBookPayload { code: string; title: string; author: string; imageUrl?: string; categoryId?: number; stock: number; }
+export interface BookDTO { id: number; code?: string; title: string; author?: string; imageUrl?: string; stock: number; categoryId?: number; hidden?: boolean; category?: { id: number; name: string }; }
 
 export const bookApi = {
   // Lấy toàn bộ sách
-  list(){ return axiosClient.get<BookDTO[]>('/api/books').then(r=>r.data); },
+  async list(includeHidden?: boolean){
+  const rs = await axiosClient.get('/api/books', { params: { includeHidden: includeHidden ? 1 : 0 } });
+  const data = rs.data;
+  // Support both plain array and paginated shape { items: BookDTO[] }
+  return (Array.isArray(data) ? data : (data?.items ?? [])) as BookDTO[];
+  },
   // Tìm kiếm theo tiêu đề / tác giả 
-  search(title?: string, author?: string){ return axiosClient.get<BookDTO[]>('/api/books/search',{ params: { title, author }}).then(r=>r.data); },
+  async search(title?: string, author?: string, includeHidden?: boolean){
+  const rs = await axiosClient.get('/api/books/search', { params: { title, author, includeHidden: includeHidden ? 1 : 0 } });
+  const data = rs.data;
+  return (Array.isArray(data) ? data : (data?.items ?? [])) as BookDTO[];
+  },
+  async get(id: number){
+    const rs = await axiosClient.get(`/api/books/${id}`);
+    return rs.data as BookDTO;
+  },
   // Tạo sách mới
-  create(b: NewBookPayload){ return axiosClient.post<BookDTO>('/api/books', b).then(r=>r.data); },
+  async create(data: { code: string; title: string; author: string; stock: number; categoryId: number; imageUrl?: string }){
+    const rs = await axiosClient.post('/api/books', data);
+    return rs.data as BookDTO;
+  },
   // Cập nhật sách
-  update(id: number, b: NewBookPayload){ return axiosClient.put<BookDTO>(`/api/books/${id}`, b).then(r=>r.data); },
-  // Ẩn / hiện sách 
-  toggle(id: number){ return axiosClient.post<BookDTO>(`/api/books/${id}/toggle`, {}).then(r=>r.data); },
+  async update(id: number, data: { code: string; title: string; author: string; stock: number; categoryId: number; imageUrl?: string }){
+    const rs = await axiosClient.put(`/api/books/${id}`, data);
+    return rs.data as BookDTO;
+  },
   // Xóa vĩnh viễn
-  remove(id: number){ return axiosClient.delete<void>(`/api/books/${id}`).then(r=>r.data); }
+  async remove(id: number){
+    const rs = await axiosClient.delete(`/api/books/${id}`);
+    return rs.data;
+  },
+  // Ẩn / hiện sách 
+  async toggle(id: number){
+    const rs = await axiosClient.post(`/api/books/${id}/toggle`);
+    return rs.data as BookDTO;
+  }
 };

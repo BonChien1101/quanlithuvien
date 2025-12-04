@@ -32,8 +32,10 @@ export interface NewReaderPayload {
 }
 
 export const readerApi = {
-  async list(params?: { q?: string }){ 
-  const r = await axiosClient.get<ReaderDTO[]>('/api/readers', { params }); return r.data;
+  async list(params?: { q?: string; page?: number; limit?: number }){ 
+  const r = await axiosClient.get('/api/readers', { params });
+  const data: any = r.data;
+  return (Array.isArray(data) ? data : (data?.items ?? [])) as ReaderDTO[];
   },
   async get(id: number){
   const r = await axiosClient.get<ReaderDTO>(`/api/readers/${id}`); return r.data;
