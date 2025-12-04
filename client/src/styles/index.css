@@ -144,9 +144,15 @@ a:hover {
   box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 
-.stat-card--accent { background:#1f6feb; color:#fff; }
+.stat-card--accent { background:#eaf2ff; color:#0b3d91; border-color:#cfe0ff; }
 .stat-card__value { font-size: 28px; font-weight:600; }
 .stat-card__label { font-size: 14px; opacity:0.8; }
+.stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-1px); transition: box-shadow .2s, transform .2s; }
+.report-card { padding: var(--space-3); }
+.bar-wrap { display:flex; gap: var(--space-2); }
+.bar { height: 8px; border-radius: var(--radius-sm); }
+.bar--borrow { background: #1f6feb; }
+.bar--return { background: #2da44e; }
 
 .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap: var(--space-4); }
 
@@ -156,9 +162,10 @@ a:hover {
   border-radius: var(--radius-md);
   overflow:hidden;
 }
-.panel__header { font-weight:600; padding: var(--space-3) var(--space-4); border-bottom:1px solid #e5e7eb; }
+.panel__header { font-weight:600; padding: var(--space-3) var(--space-4); border-bottom:1px solid #e5e7eb; background:#f9fafb; }
 .panel table { width:100%; }
 .panel table td, .panel table th { padding:6px 10px; }
+.panel { box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
 
 @media (max-width:900px){
   .grid-2 { grid-template-columns:1fr; }
@@ -179,6 +186,7 @@ a:hover {
   gap: var(--space-3);
   margin: var(--space-5) 0 var(--space-4);
 }
+.page-header h2 { margin: 0; font-weight: 700; }
 
 /* Navbar light tweaks over Bootstrap */
 .app-navbar {
@@ -211,6 +219,10 @@ a:hover {
   border-radius: var(--radius-sm);
   padding: var(--space-3);
 }
+
+/* Thumbnails */
+.thumb { display:block; border-radius: var(--radius-sm); object-fit: cover; background:#f3f4f6; }
+.thumb--sm { width: 60px; height: 60px; }
 
 /* Utility classes */
 .mt-2 { margin-top: var(--space-2); }
@@ -253,10 +265,14 @@ dialog.app-dialog {
   border: none;
   padding: 0;
   border-radius: var(--radius-md);
-  width: 420px;
+  width: 480px;
   max-width: 90vw;
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   background: #fff;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 dialog.app-dialog::backdrop {
   background: rgba(17,24,39,0.55);

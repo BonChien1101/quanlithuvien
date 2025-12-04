@@ -32,24 +32,19 @@ export interface NewReaderPayload {
 }
 
 export const readerApi = {
-  async list(){ 
-    try { const r = await axiosClient.get<ReaderDTO[]>('/api/readers'); return r.data; }
-    catch(e:any){ if(e?.response?.status===404){ const r2 = await axiosClient.get<ReaderDTO[]>('/readers'); return r2.data; } throw e; }
+  async list(params?: { q?: string }){ 
+  const r = await axiosClient.get<ReaderDTO[]>('/api/readers', { params }); return r.data;
   },
   async get(id: number){
-    try { const r = await axiosClient.get<ReaderDTO>(`/api/readers/${id}`); return r.data; }
-    catch(e:any){ if(e?.response?.status===404){ const r2 = await axiosClient.get<ReaderDTO>(`/readers/${id}`); return r2.data; } throw e; }
+  const r = await axiosClient.get<ReaderDTO>(`/api/readers/${id}`); return r.data;
   },
   async create(r: NewReaderPayload){ 
-    try { const r1 = await axiosClient.post<ReaderDTO>('/api/readers', r); return r1.data; }
-    catch(e:any){ if(e?.response?.status===404){ const r2 = await axiosClient.post<ReaderDTO>('/readers', r); return r2.data; } throw e; }
+  const r1 = await axiosClient.post<ReaderDTO>('/api/readers', r); return r1.data;
   },
   async update(id: number, r: NewReaderPayload){ 
-    try { const r1 = await axiosClient.put<ReaderDTO>(`/api/readers/${id}`, r); return r1.data; }
-    catch(e:any){ if(e?.response?.status===404){ const r2 = await axiosClient.put<ReaderDTO>(`/readers/${id}`, r); return r2.data; } throw e; }
+  const r1 = await axiosClient.put<ReaderDTO>(`/api/readers/${id}`, r); return r1.data;
   },
   async remove(id: number){ 
-    try { const r = await axiosClient.delete<void>(`/api/readers/${id}`); return r.data as any; }
-    catch(e:any){ if(e?.response?.status===404){ const r2 = await axiosClient.delete<void>(`/readers/${id}`); return r2.data as any; } throw e; }
+  const r = await axiosClient.delete<void>(`/api/readers/${id}`); return r.data as any;
   }
 };

@@ -32,48 +32,48 @@ async function seedData() {
     // 2. Tạo sách mẫu
     const books = await Book.bulkCreate([
       // Văn học
-      { title: 'Số đỏ', author: 'Vũ Trọng Phụng', stock: 15, categoryId: 1 },
-      { title: 'Tắt đèn', author: 'Ngô Tất Tố', stock: 12, categoryId: 1 },
-      { title: 'Chí Phèo', author: 'Nam Cao', stock: 20, categoryId: 1 },
-      { title: 'Lão Hạc', author: 'Nam Cao', stock: 18, categoryId: 1 },
-      { title: 'Vợ nhặt', author: 'Kim Lân', stock: 10, categoryId: 1 },
-      { title: 'Nhà giả kim', author: 'Paulo Coelho', stock: 25, categoryId: 1 },
-      { title: 'Đắc nhân tâm', author: 'Dale Carnegie', stock: 30, categoryId: 6 },
+      { code: 'VH001', title: 'Số đỏ', author: 'Vũ Trọng Phụng', imageUrl: 'https://picsum.photos/seed/vh001/200/300', stock: 15, categoryId: 1 },
+      { code: 'VH002', title: 'Tắt đèn', author: 'Ngô Tất Tố', imageUrl: 'https://picsum.photos/seed/vh002/200/300', stock: 12, categoryId: 1 },
+      { code: 'VH003', title: 'Chí Phèo', author: 'Nam Cao', imageUrl: 'https://picsum.photos/seed/vh003/200/300', stock: 20, categoryId: 1 },
+      { code: 'VH004', title: 'Lão Hạc', author: 'Nam Cao', imageUrl: 'https://picsum.photos/seed/vh004/200/300', stock: 18, categoryId: 1 },
+      { code: 'VH005', title: 'Vợ nhặt', author: 'Kim Lân', imageUrl: 'https://picsum.photos/seed/vh005/200/300', stock: 10, categoryId: 1 },
+      { code: 'VH006', title: 'Nhà giả kim', author: 'Paulo Coelho', imageUrl: 'https://picsum.photos/seed/vh006/200/300', stock: 25, categoryId: 1 },
+      { code: 'KN001', title: 'Đắc nhân tâm', author: 'Dale Carnegie', imageUrl: 'https://picsum.photos/seed/kn001/200/300', stock: 30, categoryId: 6 },
       
       // Khoa học & Công nghệ
-      { title: 'Lược sử thời gian', author: 'Stephen Hawking', stock: 8, categoryId: 2 },
-      { title: 'Sapiens: Lược sử loài người', author: 'Yuval Noah Harari', stock: 22, categoryId: 2 },
-      { title: 'Homo Deus', author: 'Yuval Noah Harari', stock: 18, categoryId: 2 },
-      { title: 'Thuật toán đời sống', author: 'Brian Christian', stock: 10, categoryId: 2 },
-      { title: 'Clean Code', author: 'Robert C. Martin', stock: 15, categoryId: 2 },
+  { code: 'KH001', title: 'Lược sử thời gian', author: 'Stephen Hawking', imageUrl: 'https://picsum.photos/seed/kh001/200/300', stock: 8, categoryId: 2 },
+  { code: 'KH002', title: 'Sapiens: Lược sử loài người', author: 'Yuval Noah Harari', imageUrl: 'https://picsum.photos/seed/kh002/200/300', stock: 22, categoryId: 2 },
+  { code: 'KH003', title: 'Homo Deus', author: 'Yuval Noah Harari', imageUrl: 'https://picsum.photos/seed/kh003/200/300', stock: 18, categoryId: 2 },
+  { code: 'KH004', title: 'Thuật toán đời sống', author: 'Brian Christian', imageUrl: 'https://picsum.photos/seed/kh004/200/300', stock: 10, categoryId: 2 },
+  { code: 'CN001', title: 'Clean Code', author: 'Robert C. Martin', imageUrl: 'https://picsum.photos/seed/cn001/200/300', stock: 15, categoryId: 2 },
       
       // Lịch sử
-      { title: 'Việt Nam sử lược', author: 'Trần Trọng Kim', stock: 12, categoryId: 3 },
-      { title: 'Đại Việt sử ký toàn thư', author: 'Ngô Sĩ Liên', stock: 8, categoryId: 3 },
-      { title: 'Lịch sử thế giới', author: 'J.M. Roberts', stock: 10, categoryId: 3 },
+  { code: 'LS001', title: 'Việt Nam sử lược', author: 'Trần Trọng Kim', imageUrl: 'https://picsum.photos/seed/ls001/200/300', stock: 12, categoryId: 3 },
+  { code: 'LS002', title: 'Đại Việt sử ký toàn thư', author: 'Ngô Sĩ Liên', imageUrl: 'https://picsum.photos/seed/ls002/200/300', stock: 8, categoryId: 3 },
+  { code: 'LS003', title: 'Lịch sử thế giới', author: 'J.M. Roberts', imageUrl: 'https://picsum.photos/seed/ls003/200/300', stock: 10, categoryId: 3 },
       
       // Triết học
-      { title: 'Nghệ thuật sống', author: 'Thích Nhất Hạnh', stock: 20, categoryId: 4 },
-      { title: 'Tuổi trẻ đáng giá bao nhiêu', author: 'Rosie Nguyễn', stock: 28, categoryId: 6 },
-      { title: 'Quốc gia', author: 'Plato', stock: 6, categoryId: 4 },
+  { code: 'TP001', title: 'Nghệ thuật sống', author: 'Thích Nhất Hạnh', imageUrl: 'https://picsum.photos/seed/tp001/200/300', stock: 20, categoryId: 4 },
+  { code: 'KN002', title: 'Tuổi trẻ đáng giá bao nhiêu', author: 'Rosie Nguyễn', imageUrl: 'https://picsum.photos/seed/kn002/200/300', stock: 28, categoryId: 6 },
+  { code: 'TP002', title: 'Quốc gia', author: 'Plato', imageUrl: 'https://picsum.photos/seed/tp002/200/300', stock: 6, categoryId: 4 },
       
       // Kinh tế
-      { title: 'Tư bản luận', author: 'Karl Marx', stock: 5, categoryId: 5 },
-      { title: 'Nghĩ giàu làm giàu', author: 'Napoleon Hill', stock: 24, categoryId: 5 },
-      { title: 'Dám nghĩ lớn', author: 'David J. Schwartz', stock: 16, categoryId: 6 },
+  { code: 'KT001', title: 'Tư bản luận', author: 'Karl Marx', imageUrl: 'https://picsum.photos/seed/kt001/200/300', stock: 5, categoryId: 5 },
+  { code: 'KT002', title: 'Nghĩ giàu làm giàu', author: 'Napoleon Hill', imageUrl: 'https://picsum.photos/seed/kt002/200/300', stock: 24, categoryId: 5 },
+  { code: 'KN003', title: 'Dám nghĩ lớn', author: 'David J. Schwartz', imageUrl: 'https://picsum.photos/seed/kn003/200/300', stock: 16, categoryId: 6 },
       
       // Thiếu nhi
-      { title: 'Dế mèn phưu lưu ký', author: 'Tô Hoài', stock: 30, categoryId: 7 },
-      { title: 'Hoàng tử bé', author: 'Antoine de Saint-Exupéry', stock: 25, categoryId: 7 },
-      { title: 'Rừng Na-uy', author: 'Haruki Murakami', stock: 14, categoryId: 1 },
-      { title: 'Kafka bên bờ biển', author: 'Haruki Murakami', stock: 12, categoryId: 1 },
+  { code: 'TN001', title: 'Dế mèn phưu lưu ký', author: 'Tô Hoài', imageUrl: 'https://picsum.photos/seed/tn001/200/300', stock: 30, categoryId: 7 },
+  { code: 'TN002', title: 'Hoàng tử bé', author: 'Antoine de Saint-Exupéry', imageUrl: 'https://picsum.photos/seed/tn002/200/300', stock: 25, categoryId: 7 },
+  { code: 'VH007', title: 'Rừng Na-uy', author: 'Haruki Murakami', imageUrl: 'https://picsum.photos/seed/vh007/200/300', stock: 14, categoryId: 1 },
+  { code: 'VH008', title: 'Kafka bên bờ biển', author: 'Haruki Murakami', imageUrl: 'https://picsum.photos/seed/vh008/200/300', stock: 12, categoryId: 1 },
       
       // Giáo khoa & Tham khảo
-      { title: 'Toán cao cấp', author: 'Nguyễn Đình Trí', stock: 20, categoryId: 8 },
-      { title: 'Vật lý đại cương', author: 'Nguyễn Văn Hùng', stock: 18, categoryId: 8 },
-      { title: 'Hóa học hữu cơ', author: 'Trần Văn Nam', stock: 15, categoryId: 8 },
-      { title: 'Tiếng Anh giao tiếp', author: 'Cambridge', stock: 22, categoryId: 8 },
-      { title: 'Cấu trúc dữ liệu và giải thuật', author: 'Thomas H. Cormen', stock: 10, categoryId: 2 }
+  { code: 'GK001', title: 'Toán cao cấp', author: 'Nguyễn Đình Trí', imageUrl: 'https://picsum.photos/seed/gk001/200/300', stock: 20, categoryId: 8 },
+  { code: 'GK002', title: 'Vật lý đại cương', author: 'Nguyễn Văn Hùng', imageUrl: 'https://picsum.photos/seed/gk002/200/300', stock: 18, categoryId: 8 },
+  { code: 'GK003', title: 'Hóa học hữu cơ', author: 'Trần Văn Nam', imageUrl: 'https://picsum.photos/seed/gk003/200/300', stock: 15, categoryId: 8 },
+  { code: 'GK004', title: 'Tiếng Anh giao tiếp', author: 'Cambridge', imageUrl: 'https://picsum.photos/seed/gk004/200/300', stock: 22, categoryId: 8 },
+  { code: 'CN002', title: 'Cấu trúc dữ liệu và giải thuật', author: 'Thomas H. Cormen', imageUrl: 'https://picsum.photos/seed/cn002/200/300', stock: 10, categoryId: 2 }
     ], { ignoreDuplicates: true });
     console.log(`✓ Created ${books.length} books`);
 

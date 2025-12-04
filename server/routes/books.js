@@ -78,11 +78,14 @@ router.get('/:id', async (req, res) => {
 // POST create new book
 router.post('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
-    const { code, title, author, stock, categoryId } = req.body;
-    if (!title) {
-      return res.status(400).json({ message: 'Tên sách là bắt buộc' });
+    const { code, title, author, imageUrl, stock, categoryId } = req.body;
+    if (!code || !title || !author) {
+      return res.status(400).json({ message: 'Phải nhập đầy đủ thông tin' });
     }
-    const book = await Book.create({ code, title, author, stock: stock || 0, categoryId });
+    if (!categoryId) {
+      return res.status(400).json({ message: 'Phải chọn thể loại' });
+    }
+    const book = await Book.create({ code, title, author, imageUrl, stock: Number.isFinite(stock) ? stock : 0, categoryId });
     res.status(201).json(book);
   } catch (err) {
     console.error('Lỗi tạo sách:', err);
@@ -97,8 +100,8 @@ router.put('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), as
     if (!book) {
       return res.status(404).json({ message: 'Không tìm thấy sách' });
     }
-    const { code, title, author, stock, categoryId } = req.body;
-    await book.update({ code, title, author, stock, categoryId });
+  const { code, title, author, imageUrl, stock, categoryId } = req.body;
+  await book.update({ code, title, author, imageUrl, stock, categoryId });
     res.json(book);
   } catch (err) {
     console.error('Lỗi cập nhật sách:', err);
