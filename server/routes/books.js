@@ -14,9 +14,16 @@ router.get('/', async (req, res) => {
     const where = {};
     if (categoryId) where.categoryId = categoryId;
     // Exclude hidden by default unless explicitly requested
-    if (!includeHidden || includeHidden === '0' || includeHidden === 'false') {
+    if (includeHidden === '0' || includeHidden === 'false') {
       where.hidden = { [Op.not]: true };
-    }
+      where.hiddenByCategory = { [Op.not]: true };
+    } else if (includeHidden === '1' || includeHidden === 'true') {
+      // Nếu lấy danh sách đã ẩn, lọc cả hidden hoặc hiddenByCategory
+      where[Op.or] = [
+        { hidden: true },
+        { hiddenByCategory: true }
+      ];
+    } // Nếu includeHidden === '2' hoặc undefined thì KHÔNG lọc gì, trả về tất cả
     const { rows, count } = await Book.findAndCountAll({
       where,
       include: [{ 
@@ -35,7 +42,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET search books by title or author
+// GET tìm kiếm sách theo tiêu đề hoặc tác giả
 router.get('/search', async (req, res) => {
   try {
   const { title, author, includeHidden } = req.query;
@@ -50,8 +57,7 @@ router.get('/search', async (req, res) => {
     if (author) {
       where.author = { [Op.like]: `%${author}%` };
     }
-    
-    // Exclude hidden by default unless explicitly requested
+    // không hiện sách đã ẩn trừ khi yêu cầu rõ ràng
     if (!includeHidden || includeHidden === '0' || includeHidden === 'false') {
       where.hidden = { [Op.not]: true };
     }

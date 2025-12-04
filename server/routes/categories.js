@@ -119,7 +119,17 @@ router.post('/:id/toggle', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARI
     if (!category) {
       return res.status(404).json({ message: 'Không tìm thấy thể loại' });
     }
-    await category.update({ hidden: !category.hidden });
+    const newHidden = !category.hidden;
+    await category.update({ hidden: newHidden });
+    // Ẩn/hiện sách thuộc thể loại này
+    const books = await Book.findAll({ where: { categoryId: category.id } });
+    if (newHidden) {
+      // Ẩn tất cả sách chưa bị ẩn, đánh dấu hiddenByCategory
+      await Promise.all(books.filter(b=>!b.hidden).map(b=>b.update({ hidden: true, hiddenByCategory: true })));
+    } else {
+      // Hiện lại chỉ sách bị ẩn do thao tác ẩn thể loại
+      await Promise.all(books.filter(b=>b.hidden && b.hiddenByCategory).map(b=>b.update({ hidden: false, hiddenByCategory: false })));
+    }
     res.json(category);
   } catch (error) {
     console.error('Lỗi thay đổi trạng thái thể loại:', error);

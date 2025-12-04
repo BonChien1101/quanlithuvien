@@ -19,12 +19,14 @@ export default function BookList(){
   const load = async () => {
     setLoading(true); setError(undefined);
     try {
-      const includeHidden = statusFilter !== 'visible';
-      const params: any = { includeHidden: includeHidden ? 1 : 0, page, limit };
+  let params: any = { page, limit };
+  if (statusFilter === 'visible') params.includeHidden = 0;
+  else if (statusFilter === 'hidden') params.includeHidden = 1;
+  else if (statusFilter === 'all') params.includeHidden = 2;
       const rs = (filterTitle || filterAuthor)
         ? await (await import('../../api/axiosClient')).default.get('/api/books/search', { params: { title: filterTitle || undefined, author: filterAuthor || undefined, ...params } })
         : await (await import('../../api/axiosClient')).default.get('/api/books', { params });
-  const data = Array.isArray(rs.data) ? rs.data : (rs.data?.items ?? []);
+      const data = Array.isArray(rs.data) ? rs.data : (rs.data?.items ?? []);
       setBooks(data);
     } catch(e:any){ setError(e?.message || 'Lỗi tải sách'); }
     finally { setLoading(false); }
@@ -69,9 +71,14 @@ export default function BookList(){
     catch(e:any){ setError(e?.message || 'Lỗi thay đổi trạng thái sách'); }
   };
 
-  const handleSearch = () => {
-    if (page !== 1) setPage(1); else load();
-  };
+
+  // Debounce tìm kiếm tự động
+  useEffect(()=>{
+    const timer = setTimeout(()=>{
+      setPage(1); load();
+    }, 400);
+    return ()=>clearTimeout(timer);
+  }, [filterTitle, filterAuthor]);
 
   return (
     <div className="container py-3">
@@ -83,7 +90,6 @@ export default function BookList(){
         <div className="row g-2 mb-2">
           <div className="col"><input placeholder="Tiêu đề" className="form-control" value={filterTitle} onChange={e=>setFilterTitle(e.target.value)} /></div>
           <div className="col"><input placeholder="Tác giả"   className="form-control" value={filterAuthor} onChange={e=>setFilterAuthor(e.target.value)} /></div>
-          <div className="col-auto"><button className="btn btn-primary" onClick={handleSearch}>Tìm kiếm</button></div>
           <div className="col-auto">
             <select className="form-select" value={statusFilter} onChange={e=>{ setStatusFilter(e.target.value as any); }}>
               <option value="visible">Danh sách hiển thị</option>
@@ -98,11 +104,7 @@ export default function BookList(){
   <table className="table table-striped align-middle">
           <thead><tr><th>Tiêu đề</th><th>Ảnh</th><th>Mã</th><th>Tác giả</th><th>Tồn kho</th><th>Trạng thái</th><th className="text-end" style={{width:220}}>Hành động</th></tr></thead>
           <tbody>
-            {books.filter(b=> {
-              if(statusFilter === 'visible') return !b.hidden;
-              if(statusFilter === 'hidden') return !!b.hidden;
-              return true;
-            }).map(b => (
+            {books.map(b => (
               <tr key={b.id} className={b.hidden ? 'table-secondary text-muted' : ''}>
                 <td>{b.title}</td>
                 <td style={{width:80}}>{b.imageUrl ? <img src={b.imageUrl} alt={b.title} className="thumb thumb--sm" /> : <span className="text-muted">(không ảnh)</span>}</td>
