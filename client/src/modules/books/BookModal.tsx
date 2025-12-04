@@ -9,7 +9,7 @@ interface Props {
   open: boolean;
   initial?: Partial<BookDTO>;
   onClose: () => void;
-  onSubmit: (data: { code: string; title: string; author: string; stock: number; categoryId?: number }, editingId?: number) => void;
+  onSubmit: (data: { code: string; title: string; author: string; imageUrl?: string; stock: number; categoryId?: number }, editingId?: number) => void;
 }
 
 export default function BookModal({ open, initial, onClose, onSubmit }: Props){
@@ -18,6 +18,7 @@ export default function BookModal({ open, initial, onClose, onSubmit }: Props){
   const [title, setTitle] = React.useState(initial?.title||'');
   const [author, setAuthor] = React.useState(initial?.author||'');
   const [stock, setStock] = React.useState<number>(initial?.stock||0);
+  const [imageUrl, setImageUrl] = React.useState<string>(initial?.imageUrl||'');
   const [categoryId, setCategoryId] = React.useState<number|undefined>(initial?.category?.id);
   const [categories, setCategories] = React.useState<Category[]>([]);
 
@@ -26,7 +27,8 @@ export default function BookModal({ open, initial, onClose, onSubmit }: Props){
     setCode(initial?.code||'');
     setTitle(initial?.title||'');
     setAuthor(initial?.author||'');
-    setStock(initial?.stock||0);
+  setStock(initial?.stock||0);
+  setImageUrl(initial?.imageUrl||'');
   setCategoryId(initial?.category?.id);
   },[initial]);
 
@@ -68,7 +70,7 @@ export default function BookModal({ open, initial, onClose, onSubmit }: Props){
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-  onSubmit({ code, title, author, stock, categoryId }, initial?.id);
+  onSubmit({ code, title, author, imageUrl, stock, categoryId }, initial?.id);
   };
 
   return (
@@ -77,17 +79,24 @@ export default function BookModal({ open, initial, onClose, onSubmit }: Props){
         <h5 id="bookModalTitle" className="mb-3">{initial?.id ? 'Cập nhật sách' : 'Thêm sách mới'}</h5>
         <div className="mb-2"><input required placeholder="Mã" className="form-control" value={code} onChange={e=>setCode(e.target.value)} /></div>
         <div className="mb-2"><input required placeholder="Tiêu đề" className="form-control" value={title} onChange={e=>setTitle(e.target.value)} /></div>
-        <div className="mb-2"><input required placeholder="Tác giả" className="form-control" value={author} onChange={e=>setAuthor(e.target.value)} /></div>
+  <div className="mb-2"><input required placeholder="Tác giả" className="form-control" value={author} onChange={e=>setAuthor(e.target.value)} /></div>
+  <div className="mb-2"><input placeholder="Ảnh bìa (URL)" className="form-control" value={imageUrl} onChange={e=>setImageUrl(e.target.value)} /></div>
         <div className="mb-3"><input type="number" min={0} placeholder="Tồn kho" className="form-control" value={stock} onChange={e=>setStock(parseInt(e.target.value||'0'))} /></div>
         <div className="mb-3">
-          <select className="form-select" value={categoryId||''} onChange={e=>setCategoryId(parseInt(e.target.value))}>
+          <select required className="form-select" value={categoryId||''} onChange={e=>setCategoryId(parseInt(e.target.value))}>
             <option value="">-- Thể loại --</option>
             {categories.map(c=> <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
         <div className="d-flex gap-2 justify-content-end">
           <button type="button" className="btn btn-secondary" onClick={onClose}>Đóng</button>
-          <button type="submit" className="btn btn-success" disabled={!code||!title||!author}>{initial?.id ? 'Lưu' : 'Thêm mới'}</button>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={!code || !title || !author || (categoryId===undefined) || categoryId===0 || stock<0}
+          >
+            {initial?.id ? 'Lưu' : 'Thêm mới'}
+          </button>
         </div>
       </form>
     </dialog>

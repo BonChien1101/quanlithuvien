@@ -26,7 +26,7 @@ router.get('/reader/:readerId', authenticate, requireRole([ROLES.ADMIN, ROLES.LI
 });
 
 // POST borrow book
-router.post('/borrow', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
+router.post('/borrow', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN, ROLES.USER]), async (req, res) => {
   try {
     const { bookId, readerId, dueAt } = req.body || {};
     if (!bookId || !readerId) return res.status(400).json({ message: 'Thiếu thông tin bookId/readerId' });
@@ -49,7 +49,7 @@ router.post('/borrow', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN])
 });
 
 // POST return book
-router.post('/:id/return', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
+router.post('/:id/return', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN, ROLES.USER]), async (req, res) => {
   try {
     const loan = await Loan.findByPk(req.params.id, { include: [{ model: Book, as: 'book' }] });
     if (!loan) return res.status(404).json({ message: 'Không tìm thấy lượt mượn' });

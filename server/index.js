@@ -16,6 +16,17 @@ const reportsRoutes = require('./routes/reports');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+// Disable ETag to avoid 304 caching for API responses
+app.set('etag', false);
+// Global no-cache headers for API routes
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+  }
+  next();
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/auth', authRoutes); // fallback path
