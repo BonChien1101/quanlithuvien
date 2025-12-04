@@ -53,8 +53,8 @@ export default function Login(){
 
 
   return (
-    <div className="d-flex align-items-center justify-content-center" style={{ minHeight: 'calc(100vh - 56px)' }}>
-      <div className="form-card" style={{ width: 500, maxWidth: '90vw' }}>
+    <div className="auth-bg">
+  <div className="form-card auth-card" style={{ width: 500, maxWidth: '90vw' }}>
         <h2 className="text-center mb-4">Đăng nhập Hệ thống Thư viện</h2>
 
 

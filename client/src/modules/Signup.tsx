@@ -40,8 +40,8 @@ export default function Signup(){
       }
     };
     return ( // Giao diện đăng ký
-        <div className="d-flex align-items-center justify-content-center" style={{ minHeight: 'calc(100vh - 56px)' }}>
-        <div className="form-card" style={{ width: 420, maxWidth: '90vw' }}>
+        <div className="auth-bg">
+    <div className="form-card auth-card" style={{ width: 420, maxWidth: '90vw' }}>
         <h2>Đăng ký</h2>
             <form onSubmit={submit}>
                 <div className="mb-3">
@@ -61,7 +61,7 @@ export default function Signup(){
                     <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Đang đăng ký...' : 'Đăng ký'}</button>
                 </div>
             </form>
-        </div>
-        </div>
+    </div>
+    </div>
     );
 }

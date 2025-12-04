@@ -9,7 +9,8 @@ module.exports = (sequelize) => {
   imageUrl: { type: DataTypes.STRING(1024), allowNull: true },
     stock: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     categoryId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true },
-    hidden: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
+  hidden: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+  hiddenByCategory: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
   }, {
     tableName: 'books',
     timestamps: true

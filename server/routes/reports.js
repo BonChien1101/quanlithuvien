@@ -7,9 +7,9 @@ const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 // GET /api/reports/inventory
 router.get('/inventory', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
-  const books = await Book.findAll({ attributes: ['id','title','stock'] });
-  // Return a simple array matching client expectations: { bookId, title, stock }
-  const inventory = books.map(b => ({ bookId: b.id, title: b.title, stock: b.stock }));
+  const books = await Book.findAll({ attributes: ['id','code','title','stock'] });
+  // Return a simple array matching client expectations: { bookId, code, title, stock }
+  const inventory = books.map(b => ({ bookId: b.id, code: b.code, title: b.title, stock: b.stock }));
   res.json(inventory);
   } catch (err) {
     console.error('Lỗi báo cáo tồn kho:', err);
@@ -21,8 +21,8 @@ router.get('/inventory', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN
 router.get('/inventory/low', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const threshold = parseInt(String(req.query.threshold || 3), 10);
-    const books = await Book.findAll({ attributes: ['id','title','stock'], where: { stock: { [Op.lte]: threshold } }, order: [['stock','ASC']] });
-    res.json(books.map(b=>({ bookId: b.id, title: b.title, stock: b.stock })));
+  const books = await Book.findAll({ attributes: ['id','code','title','stock'], where: { stock: { [Op.lte]: threshold } }, order: [['stock','ASC']] });
+  res.json(books.map(b=>({ bookId: b.id, code: b.code, title: b.title, stock: b.stock })));
   } catch (err) {
     console.error('Lỗi báo cáo sách sắp hết:', err);
     res.status(500).json({ message: 'Lỗi máy chủ' });

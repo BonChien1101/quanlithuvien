@@ -73,6 +73,8 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--space-4);
+  position: relative;
+  z-index: 10; /* nổi trên nền auth */
 }
 
 .topbar__search {
@@ -83,11 +85,51 @@ a:hover {
 .topbar__actions {
   display: flex;
   gap: var(--space-3);
+  margin-left: auto; /* push actions to the right */
 }
 
 .content {
   padding: var(--space-4);
 }
+
+/* Auth pages background */
+.auth-bg {
+  position: relative;
+  min-height: calc(100vh - 56px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible; /* cho phép nền toàn màn hình */
+}
+.auth-bg::before {
+  content: '';
+  position: fixed; /* nền phủ full màn hình */
+  left: 0; right: 0; top: 0; bottom: 0;
+  background-image: url('https://media.istockphoto.com/id/949118068/vi/anh/s%C3%A1ch-v%E1%BB%9F.jpg?s=612x612&w=0&k=20&c=0chhd8BWYUNQidNDqUF-JsxLwj8xKoGnC92_AcuCQkA=');
+  background-size: cover;
+  background-position: center;
+  filter: blur(2px);
+  transform: scale(1.03);
+  z-index: 0;
+}
+.auth-bg::after {
+  content: '';
+  position: fixed; /* lớp phủ mờ */
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0.18));
+  z-index: 0;
+}
+.auth-bg > * { position: relative; z-index: 1; }
+
+/* Glass effect cho thẻ form đăng nhập/đăng ký */
+.auth-card {
+  background: rgba(255,255,255,0.85) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+.auth-card h2 { font-weight: 700; }
 
 /* Sidebar */
 .sidebar {
