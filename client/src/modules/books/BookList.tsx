@@ -59,7 +59,7 @@ export default function BookList(){
       <div className="page-header d-flex align-items-center justify-content-between">
         <h2 className="mb-0">Sách</h2>
   {/* Nút mở modal thêm mới (không gửi request ngay) */}
- <button className="btn btn-success" onClick={()=>{ setEditing(undefined); setModalOpen(true); }}>Thêm mới</button>
+ <button className="btn btn-primary" onClick={()=>{ setEditing(undefined); setModalOpen(true); }}>Thêm mới</button>
       </div>
       <div className="table-wrap">
         <div className="row g-2 mb-2">
@@ -69,22 +69,27 @@ export default function BookList(){
         </div>
         {loading && <Spinner/>}
         <ErrorAlert error={error} />
-        <table className="table table-striped">
-          <thead><tr><th>Mã</th><th>Tiêu đề</th><th>Tác giả</th><th>Tồn kho</th><th>Ẩn</th><th>Hành động</th></tr></thead>
+        <table className="table table-striped align-middle">
+          <thead><tr><th>Tiêu đề</th><th>Ảnh</th><th>Mã</th><th>Tác giả</th><th>Tồn kho</th><th>Ẩn</th><th className="text-end" style={{width:220}}>Hành động</th></tr></thead>
           <tbody>
             {books.map(b => (
               <tr key={b.id}>
-                <td>{b.code}</td>
                 <td>{b.title}</td>
+                <td style={{width:80}}>
+                  {b.imageUrl ? <img src={b.imageUrl} alt={b.title} className="thumb thumb--sm" /> : <span className="text-muted">(không ảnh)</span>}
+                </td>
+                <td>{b.code || <span className="text-muted">(không mã)</span>}</td>
                 <td>{b.author}</td>
                 <td>{b.stock}</td>
                 <td>{b.hidden ? 'Có' : 'Không'}</td>
-                <td className="d-flex gap-1">
-                  <button type="button" className="btn btn-sm btn-outline-primary" onClick={()=>startEdit(b)}>Sửa</button>
-                  {/* Toggle ẩn/hiện -> BACKEND POST /api/books/{id}/toggle */}
-                  <button type="button" className="btn btn-sm btn-outline-warning" onClick={async ()=>{ await bookApi.toggle(b.id); load(); }}>Ẩn/Hiện</button>
-                  {/* Gọi DELETE BACKEND */}
-                  <button type="button" className="btn btn-sm btn-outline-danger" onClick={()=>remove(b.id)}>Xóa</button>
+                <td>
+                  <div className="d-flex justify-content-end align-items-center gap-2">
+                    <button type="button" className="btn btn-sm btn-outline-primary" onClick={()=>startEdit(b)}>Sửa</button>
+                    {/* Toggle ẩn/hiện -> BACKEND POST /api/books/{id}/toggle */}
+                    <button type="button" className="btn btn-sm btn-outline-warning" onClick={async ()=>{ await bookApi.toggle(b.id); load(); }}>Ẩn/Hiện</button>
+                    {/* Gọi DELETE BACKEND */}
+                    <button type="button" className="btn btn-sm btn-outline-danger" onClick={()=>remove(b.id)}>Xóa</button>
+                  </div>
                 </td>
               </tr>
             ))}

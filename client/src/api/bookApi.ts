@@ -8,8 +8,8 @@
 //  DELETE /api/books/{id} -> remove()
 import axiosClient from './axiosClient';
 
-export interface BookDTO { id: number; code: string; title: string; author: string; category?: { id: number }; stock: number; hidden?: boolean; }
-export interface NewBookPayload { code: string; title: string; author: string; categoryId?: number; stock: number; }
+export interface BookDTO { id: number; code: string; title: string; author: string; imageUrl?: string; category?: { id: number }; stock: number; hidden?: boolean; }
+export interface NewBookPayload { code: string; title: string; author: string; imageUrl?: string; categoryId?: number; stock: number; }
 
 export const bookApi = {
   // Lấy toàn bộ sách

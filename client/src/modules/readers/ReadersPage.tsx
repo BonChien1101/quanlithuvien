@@ -15,6 +15,7 @@ export default function ReadersPage(){
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string|undefined>();
+  // Trang quản lý độc giả: hiển thị danh sách, thêm/sửa/xóa
 
   const load = async () => {
     setLoading(true);
@@ -63,9 +64,10 @@ export default function ReadersPage(){
     <div className="d-flex justify-content-between align-items-center mb-3">
       <h2 className="m-0">Độc giả</h2>
       <button className="btn btn-primary" onClick={()=>{ setEditing(undefined); setForm({ name: '', quota: 3 }); setShowModal(true); }}>
-        + Thêm mới
+        Thêm mới
       </button>
     </div>
+
     <div className="card">
       <div className="card-body p-0">
   {loading && <Spinner/>}
@@ -80,7 +82,7 @@ export default function ReadersPage(){
             <td>{r.name}</td>
             <td>{(r as any).phone || '-'}</td>
             <td>{(r as any).email || '-'}</td>
-            <td className="text-capitalize">{(r as any).gender || '-'}</td>
+            <td>{(r as any).gender ? ({ male: 'Nam', female: 'Nữ', other: 'Khác' } as any)[(r as any).gender] : '-'}</td>
             <td>{(r as any).dob || '-'}</td>
             <td>{r.quota}</td>
             <td className="d-flex gap-1">
