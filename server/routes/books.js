@@ -7,19 +7,28 @@ const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 // GET all books with optional category filter
 router.get('/', async (req, res) => {
   try {
-    const { categoryId } = req.query;
-    const where = categoryId ? { categoryId } : {};
-    
-    const books = await Book.findAll({
+    const { categoryId, includeHidden } = req.query;
+    const page = Math.max(parseInt(String(req.query.page || 1), 10), 1);
+    const limit = Math.max(parseInt(String(req.query.limit || 10), 10), 1);
+    const offset = (page - 1) * limit;
+    const where = {};
+    if (categoryId) where.categoryId = categoryId;
+    // Exclude hidden by default unless explicitly requested
+    if (!includeHidden || includeHidden === '0' || includeHidden === 'false') {
+      where.hidden = { [Op.not]: true };
+    }
+    const { rows, count } = await Book.findAndCountAll({
       where,
       include: [{ 
         model: Category, 
         as: 'category',
         attributes: ['id', 'name']
       }],
-      order: [['title', 'ASC']]
+      order: [['title', 'ASC']],
+      limit,
+      offset
     });
-    res.json(books);
+    res.json({ items: rows, total: count, page, pageCount: Math.max(Math.ceil(count/limit),1), limit });
   } catch (err) {
     console.error('Lỗi lấy danh sách sách:', err);
     res.status(500).json({ message: 'Server error' });
@@ -29,8 +38,11 @@ router.get('/', async (req, res) => {
 // GET search books by title or author
 router.get('/search', async (req, res) => {
   try {
-    const { title, author } = req.query;
-    const where = {};
+  const { title, author, includeHidden } = req.query;
+  const page = Math.max(parseInt(String(req.query.page || 1), 10), 1);
+  const limit = Math.max(parseInt(String(req.query.limit || 10), 10), 1);
+  const offset = (page - 1) * limit;
+  const where = {};
     
     if (title) {
       where.title = { [Op.like]: `%${title}%` };
@@ -39,16 +51,22 @@ router.get('/search', async (req, res) => {
       where.author = { [Op.like]: `%${author}%` };
     }
     
-    const books = await Book.findAll({
+    // Exclude hidden by default unless explicitly requested
+    if (!includeHidden || includeHidden === '0' || includeHidden === 'false') {
+      where.hidden = { [Op.not]: true };
+    }
+    const { rows, count } = await Book.findAndCountAll({
       where,
       include: [{ 
         model: Category, 
         as: 'category',
         attributes: ['id', 'name']
       }],
-      order: [['title', 'ASC']]
+      order: [['title', 'ASC']],
+      limit,
+      offset
     });
-    res.json(books);
+    res.json({ items: rows, total: count, page, pageCount: Math.max(Math.ceil(count/limit),1), limit });
   } catch (err) {
     console.error('Lỗi tìm kiếm sách:', err);
     res.status(500).json({ message: 'Server error' });

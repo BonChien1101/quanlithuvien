@@ -70,7 +70,7 @@ export default function UsersPage(){
           <table className="table table-striped">
             <thead>
               <tr>
-                <th>Id</th>
+                <th>Mã</th>
                 <th>Tên đăng nhập</th>
                 <th>Vai trò</th>
                 <th>Hành động</th>

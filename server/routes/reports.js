@@ -120,7 +120,6 @@ router.get('/reader/:id(\\d+)', authenticate, requireRole([ROLES.ADMIN, ROLES.LI
   }
 });
 
-// --- below: extra reporting endpoints ---
 
 // GET /api/reports/top-books?limit=5&start=&end= -> Top N sách được mượn
 router.get('/top-books', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {

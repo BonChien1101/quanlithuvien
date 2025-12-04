@@ -1,22 +1,49 @@
 const express = require('express');
 const router = express.Router();
-const { Category } = require('../models');
+const { Category, Book } = require('../models');
+const S = require('../models').sequelize;
+const { Op } = require('sequelize');
 const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 
 // GET all categories
 router.get('/', async (req, res) => {
   try {
-    const categories = await Category.findAll({
-      order: [['id', 'ASC']]
+    const page = Math.max(parseInt(String(req.query.page || 1), 10), 1);
+    const limit = Math.max(parseInt(String(req.query.limit || 10), 10), 1);
+    const offset = (page - 1) * limit;
+    const q = req.query.q ? String(req.query.q) : undefined;
+    const where = q ? { name: { [Op.like]: `%${q}%` } } : undefined;
+    const { rows, count } = await Category.findAndCountAll({
+      where,
+      order: [['id', 'ASC']],
+      limit,
+      offset
     });
-    res.json(categories);
+    // compute book counts for categories in current page
+    const ids = rows.map(c => c.id);
+    let countMap = {};
+    if (ids.length) {
+      const rowsCnt = await Book.findAll({
+        attributes: ['categoryId', [S.fn('COUNT', S.col('id')), 'cnt']],
+        where: { categoryId: { [Op.in]: ids } },
+        group: ['categoryId'],
+        raw: true
+      });
+      for (const r of rowsCnt) {
+        const key = r.categoryId;
+        const val = parseInt(String(r.cnt ?? r['cnt'] ?? 0), 10) || 0;
+        countMap[key] = val;
+      }
+    }
+    const items = rows.map(c => ({ ...c.toJSON(), bookCount: countMap[c.id] || 0 }));
+    res.json({ items, total: count, page, pageCount: Math.max(Math.ceil(count/limit),1), limit });
   } catch (error) {
     console.error('Lỗi lấy danh sách thể loại:', error);
     res.status(500).json({ message: 'Lỗi khi lấy danh sách thể loại' });
   }
 });
 
-// GET category by ID with books
+
 router.get('/:id', async (req, res) => {
   try {
     const category = await Category.findByPk(req.params.id, {

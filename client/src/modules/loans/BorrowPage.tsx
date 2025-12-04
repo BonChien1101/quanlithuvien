@@ -67,7 +67,7 @@ useEffect(()=>{ (async ()=>{
             </select>
           </div>
           <div className="col-12 col-md">
-            <label className="form-label">Hạn trả (tùy chọn)</label>
+            <label className="form-label">Hạn trả</label>
             <input type="date" className="form-control" value={dueText} onChange={e=>setDueText(e.target.value)} />
           </div>
           <div className="col-12 col-md">

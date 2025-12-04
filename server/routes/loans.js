@@ -7,7 +7,15 @@ const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 router.get('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
   const loans = await Loan.findAll({ include: [{ model: Book, as: 'book', attributes: ['id','title'] }, { model: Reader, as: 'reader', attributes: ['id','name'] }], order: [['id','DESC']] });
-    res.json(loans);
+    // map to add derived isOverdue
+    const result = loans.map(l => {
+      const dueMs = l.dueAt ? new Date(l.dueAt).getTime() : null;
+      const retMs = l.returnedAt ? new Date(l.returnedAt).getTime() : null;
+      const nowMs = Date.now();
+      const isOverdue = dueMs !== null && ((retMs ?? nowMs) > dueMs);
+      return { ...l.toJSON(), isOverdue };
+    });
+    res.json(result);
   } catch (err) {
     console.error('Lỗi lấy danh sách lượt mượn:', err);
     res.status(500).json({ message: 'Lỗi máy chủ' });
@@ -54,14 +62,19 @@ router.post('/:id/return', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARI
     const loan = await Loan.findByPk(req.params.id, { include: [{ model: Book, as: 'book' }] });
     if (!loan) return res.status(404).json({ message: 'Không tìm thấy lượt mượn' });
     if (loan.returnedAt) return res.status(400).json({ message: 'Lượt mượn đã được trả' });
-    await loan.update({ returnedAt: new Date() });
+  await loan.update({ returnedAt: new Date() });
     if (loan.book) {
       await loan.book.update({ stock: (loan.book.stock || 0) + 1 });
     }
-    // Restore reader quota by 1 on return
+    // Quota handling: if overdue (returned after dueAt), penalize by -1; else restore +1
     const reader = await Reader.findByPk(loan.readerId);
     if (reader) {
-      await reader.update({ quota: (reader.quota || 0) + 1 });
+      const returnedAt = loan.returnedAt ? new Date(loan.returnedAt).getTime() : Date.now();
+      const dueAtMs = loan.dueAt ? new Date(loan.dueAt).getTime() : null;
+      const isOverdue = dueAtMs !== null && returnedAt > dueAtMs;
+      const current = reader.quota || 0;
+      const nextQuota = isOverdue ? current - 0 : current + 1;
+      await reader.update({ quota: nextQuota });
     }
     res.json(loan);
   } catch (err) {
