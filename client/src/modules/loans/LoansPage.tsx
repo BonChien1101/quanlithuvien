@@ -207,24 +207,6 @@ export default function LoansPage(){
             </div>
             <div className="d-flex align-items-center gap-2">
               <span>Hiển thị</span>
-                    <div className="col-auto" style={{minWidth:220}}>
-                      <Select
-                        options={bookOptions}
-                        value={bookOptions.find(o=>o.value===bookId) || null}
-                        onChange={(opt: {value:number,label:string}|null) => setBookId(opt ? opt.value : undefined)}
-                        placeholder="Chọn sách..."
-                        isClearable
-                      />
-                    </div>
-                    <div className="col-auto" style={{minWidth:220}}>
-                      <Select
-                        options={readerOptions}
-                        value={readerOptions.find(o=>o.value===readerId) || null}
-                        onChange={(opt: {value:number,label:string}|null) => setReaderId(opt ? opt.value : undefined)}
-                        placeholder="Chọn bạn đọc..."
-                        isClearable
-                      />
-                    </div>
               <select className="form-select form-select-sm" style={{width:'auto'}} value={limitReturned} onChange={e=>setLimitReturned(parseInt(e.target.value))}>
                 <option value={5}>5</option>
                 <option value={10}>10</option>
