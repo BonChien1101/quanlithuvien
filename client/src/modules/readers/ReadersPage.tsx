@@ -73,15 +73,16 @@ export default function ReadersPage(){
     <div className="table-wrap">
       <div className="table-responsive">
       <table className="table table-sm align-middle mb-0">
-  <thead><tr><th>ID</th><th>Tên</th><th>SĐT</th><th>Email</th><th>Giới tính</th><th>Ngày sinh</th><th>Quota</th></tr></thead>
+  <thead><tr><th>STT</th><th>Mã</th><th>Tên</th><th>SĐT</th><th>Email</th><th>Giới tính</th><th>Ngày sinh</th><th>Quota</th><th>Thao tác</th></tr></thead>
         <tbody>
-          {data.map(r=> <tr key={r.id}>
+          {data.map((r, index)=> <tr key={r.id}>
+            <td>{index + 1}</td>
             <td>{r.id}</td>
             <td>{r.name}</td>
             <td>{(r as any).phone || '-'}</td>
             <td>{(r as any).email || '-'}</td>
-            <td className="text-capitalize">{(r as any).gender || '-'}</td>
-            <td>{(r as any).dob || '-'}</td>
+            <td className="text-capitalize">{(r as any).gender === 'male' ? 'Nam' : (r as any).gender === 'female' ? 'Nữ' : (r as any).gender === 'other' ? 'Khác' : '-'}</td>
+            <td>{(r as any).dob ? new Date((r as any).dob).toLocaleDateString('vi-VN') : '-'}</td>
             <td>{r.quota}</td>
             <td className="d-flex gap-1">
               <button className="btn btn-sm btn-outline-primary" onClick={()=>startEdit(r)}>Sửa</button>
