@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Select from 'react-select';
 import { loanApi, LoanDTO } from '../../api/loanApi';
 import { bookApi, BookDTO } from '../../api/bookApi';
 import { readerApi, ReaderDTO } from '../../api/readerApi';
