@@ -4,11 +4,11 @@ const { sequelize } = require('./models');
 async function dropAllTables() {
   try {
     await sequelize.authenticate();
-    console.log('✓ Database connected');
+    console.log('Đã kết nối đến cơ sở dữ liệu');
 
     // Tắt foreign key check
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
-    console.log('✓ Disabled foreign key checks');
+    console.log('Chuyển foreign key checks sang OFF');
 
     // Lấy danh sách tất cả các bảng
     const [tables] = await sequelize.query(
@@ -24,12 +24,12 @@ async function dropAllTables() {
 
     // Bật lại foreign key check
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
-    console.log('✓ Enabled foreign key checks');
+    console.log('Có lỗi xảy ra khi bật lại foreign key checks.');
 
-    console.log('\n✅ All tables dropped successfully!');
+    console.log('\nXoá tất cả các bảng thành công.');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error('Lỗi', error);
     process.exit(1);
   }
 }

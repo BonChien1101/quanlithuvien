@@ -4,7 +4,7 @@ const { Book, Category } = require('../models');
 const { Op } = require('sequelize');
 const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 
-// GET all books with optional category filter
+// GET tất cả sách (có thể lọc theo category)
 router.get('/', async (req, res) => {
   try {
     const { categoryId, includeHidden } = req.query;
@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
     const offset = (page - 1) * limit;
     const where = {};
     if (categoryId) where.categoryId = categoryId;
-    // Exclude hidden by default unless explicitly requested
+  // Mặc định loại trừ sách bị ẩn trừ khi yêu cầu hiển thị
     if (includeHidden === '0' || includeHidden === 'false') {
       where.hidden = { [Op.not]: true };
       where.hiddenByCategory = { [Op.not]: true };
@@ -79,7 +79,7 @@ router.get('/search', async (req, res) => {
   }
 });
 
-// GET book by ID
+// GET sách theo ID
 router.get('/:id', async (req, res) => {
   try {
     const book = await Book.findByPk(req.params.id, {
@@ -99,7 +99,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST create new book
+// POST tạo sách mới
 router.post('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const { code, title, author, imageUrl, stock, categoryId } = req.body;
@@ -117,7 +117,7 @@ router.post('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), asyn
   }
 });
 
-// PUT update book
+// PUT cập nhật sách
 router.put('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const book = await Book.findByPk(req.params.id);
@@ -133,7 +133,7 @@ router.put('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), as
   }
 });
 
-// POST toggle hidden status
+// POST chuyển đổi trạng thái ẩn/hiện
 router.post('/:id/toggle', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const book = await Book.findByPk(req.params.id);
@@ -148,8 +148,8 @@ router.post('/:id/toggle', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARI
   }
 });
 
-// DELETE book
-router.delete('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
+// DELETE sách (chỉ ADMIN)
+router.delete('/:id', authenticate, requireRole([ROLES.ADMIN]), async (req, res) => {
   try {
     const book = await Book.findByPk(req.params.id);
     if (!book) {

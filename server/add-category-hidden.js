@@ -18,17 +18,17 @@ async function addHiddenToCategory() {
     if (results.length === 0) {
       // Thêm cột hidden vào bảng categories
       await sequelize.query(`
-        ALTER TABLE categories 
-        ADD COLUMN hidden TINYINT(1) DEFAULT 0
+        ALTER TABLE categories
+        ADD COLUMN hidden BOOLEAN NOT NULL DEFAULT FALSE
       `);
-      console.log('✓ Added hidden column to categories table');
+      console.log('thêm cột ẩn vào bảng categories thành công.');
     } else {
-      console.log('✓ Hidden column already exists');
+      console.log('cột ẩn đã tồn tại trong bảng categories, không cần thêm.');
     }
     
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error adding column:', error);
+    console.error('Lỗi thêm cột', error);
     process.exit(1);
   }
 }

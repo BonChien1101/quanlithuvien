@@ -6,12 +6,12 @@ const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change_me';
 
-// Public signup: always USER role
+// Đăng ký công khai: luôn gán vai trò USER
 router.post('/signup', async (req, res) => {
   try {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ message: 'Missing' });
-    // if user exists
+  // Kiểm tra user đã tồn tại hay chưa
     const existing = await User.findOne({ where: { username } });
     if (existing) return res.status(409).json({ message: 'User exists' });
   const roles = [ROLES.USER];
@@ -48,7 +48,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
     
-    // Parse roles from JSON string if needed
+  // Chuyển chuỗi JSON roles về mảng nếu cần
     let roles = user.roles || ['USER'];
     if (typeof roles === 'string') {
       roles = JSON.parse(roles);
@@ -63,7 +63,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Admin creates user with role LIBRARIAN or USER
+// Admin tạo người dùng với vai trò LIBRARIAN hoặc USER
 router.post('/admin/create-user', authenticate, requireRole([ROLES.ADMIN]), async (req, res) => {
   try {
     const { username, password, role } = req.body || {};

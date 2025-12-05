@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import { useAppSelector } from '../../store';
+import { selectRoles } from '../../features/appSlice';
 import { bookApi, BookDTO } from '../../api/bookApi';
 import { Spinner } from '../../components/Spinner';
 import { ErrorAlert } from '../../components/ErrorAlert';
 import BookModal from './BookModal';
 
 export default function BookList(){
+  const roles = useAppSelector(selectRoles);
   const [books, setBooks] = useState<BookDTO[]>([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(5);
   const [filterTitle, setFilterTitle] = useState('');
   const [filterAuthor, setFilterAuthor] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all'|'visible'|'hidden'>('visible');
@@ -32,15 +35,15 @@ export default function BookList(){
     finally { setLoading(false); }
   };
   useEffect(()=>{ load(); },[]);
-  // Auto update list when status filter changes
+  // tự động reload khi thay đổi bộ lọc
   useEffect(()=>{ setPage(1); load(); }, [statusFilter]);
   useEffect(()=>{ setPage(1); load(); }, [limit]);
-  // Reload when page changes
+  //  tải lại khi đổi trang
   useEffect(()=>{ load(); }, [page]);
 
   const closeModal = () => { setModalOpen(false); setEditing(undefined); };
 
-  const handleSubmit = async (data: { code: string; title: string; author: string; stock: number; categoryId?: number }, editingId?: number) => {
+  const handleSubmit = async (data: { code: string; title: string; author: string; stock: number; categoryId?: number; imageUrl?: string }, editingId?: number) => {
     try {
       setError(undefined);
       const payload = { 
@@ -49,7 +52,7 @@ export default function BookList(){
         author: data.author, 
         stock: data.stock, 
         categoryId: data.categoryId as number,
-        imageUrl: (editing?.imageUrl ?? undefined)
+        imageUrl: (data.imageUrl && data.imageUrl.trim()) ? data.imageUrl.trim() : undefined
       };
       if(editingId){ await bookApi.update(editingId, payload); }
       else { await bookApi.create(payload); }
@@ -101,8 +104,8 @@ export default function BookList(){
         </div>
         {loading && <Spinner/>}
         <ErrorAlert error={error} />
-  <table className="table table-striped align-middle">
-          <thead><tr><th>Tiêu đề</th><th>Ảnh</th><th>Mã</th><th>Tác giả</th><th>Tồn kho</th><th>Trạng thái</th><th className="text-end" style={{width:220}}>Hành động</th></tr></thead>
+        <table className="table table-striped align-middle">
+          <thead><tr><th>Tiêu đề</th><th>Ảnh</th><th>Mã</th><th>Tác giả</th><th>Tồn kho</th><th>Trạng thái</th><th className="text-end" style={{width:220}}>Thao tác</th></tr></thead>
           <tbody>
             {books.map(b => (
               <tr key={b.id} className={b.hidden ? 'table-secondary text-muted' : ''}>
@@ -121,7 +124,9 @@ export default function BookList(){
                   <div className="d-flex justify-content-end align-items-center gap-2">
                     <button type="button" className="btn btn-sm btn-outline-primary" onClick={()=>startEdit(b)}>Sửa</button>
                     <button type="button" className={`btn btn-sm ${b.hidden ? 'btn-success' : 'btn-outline-warning'}`} onClick={()=>toggleHidden(b.id, b.hidden || false)} title={b.hidden ? 'Hiện sách' : 'Ẩn sách'}>{b.hidden ? 'Hiện' : 'Ẩn'}</button>
-                    <button type="button" className="btn btn-sm btn-outline-danger" onClick={()=>remove(b.id)}>Xóa</button>
+                    {roles.includes('ADMIN') && (
+                      <button type="button" className="btn btn-sm btn-outline-danger" onClick={()=>remove(b.id)}>Xóa</button>
+                    )}
                   </div>
                 </td>
               </tr>

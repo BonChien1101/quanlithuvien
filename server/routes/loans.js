@@ -3,16 +3,16 @@ const router = express.Router();
 const { Loan, Book, Reader } = require('../models');
 const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 
-// GET all loans
+// GET tất cả lượt mượn
 router.get('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
   const loans = await Loan.findAll({ include: [{ model: Book, as: 'book', attributes: ['id','title'] }, { model: Reader, as: 'reader', attributes: ['id','name'] }], order: [['id','DESC']] });
-    // map to add derived isOverdue
+  // Bổ sung thuộc tính tính toán isOverdue
     const result = loans.map(l => {
       const dueMs = l.dueAt ? new Date(l.dueAt).getTime() : null;
       const retMs = l.returnedAt ? new Date(l.returnedAt).getTime() : null;
       const nowMs = Date.now();
-      const isOverdue = dueMs !== null && ((retMs ?? nowMs) > dueMs);
+      const isOverdue = dueMs !== null && ((retMs ?? nowMs) > dueMs); // isOverdue là sách chưa trả và đã quá hạn hoặc đã trả nhưng trả trễ
       return { ...l.toJSON(), isOverdue };
     });
     res.json(result);
@@ -22,7 +22,7 @@ router.get('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async
   }
 });
 
-// GET loans by reader
+// GET lượt mượn theo độc giả
 router.get('/reader/:readerId', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN, ROLES.USER]), async (req, res) => {
   try {
   const loans = await Loan.findAll({ where: { readerId: req.params.readerId }, include: [{ model: Book, as: 'book', attributes: ['id','title'] }] });
@@ -33,7 +33,7 @@ router.get('/reader/:readerId', authenticate, requireRole([ROLES.ADMIN, ROLES.LI
   }
 });
 
-// POST borrow book
+// POST mượn sách
 router.post('/borrow', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN, ROLES.USER]), async (req, res) => {
   try {
     const { bookId, readerId, dueAt } = req.body || {};
@@ -43,7 +43,7 @@ router.post('/borrow', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN, 
     if ((book.stock || 0) <= 0) return res.status(400).json({ message: 'Sách đã hết hàng' });
   const reader = await Reader.findByPk(readerId);
     if (!reader) return res.status(404).json({ message: 'Không tìm thấy độc giả' });
-  // Block when quota is 0 or less
+  // Chặn khi quota <= 0
   if ((reader.quota || 0) <= 0) return res.status(400).json({ message: 'Độc giả đã hết quota, không thể mượn thêm' });
   //chỉ chặn khi quota <= 0, không xét số lượt đang mượn
     await book.update({ stock: (book.stock || 0) - 1 });
@@ -56,7 +56,7 @@ router.post('/borrow', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN, 
   }
 });
 
-// POST return book
+// POST trả sách
 router.post('/:id/return', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN, ROLES.USER]), async (req, res) => {
   try {
     const loan = await Loan.findByPk(req.params.id, { include: [{ model: Book, as: 'book' }] });
@@ -66,7 +66,7 @@ router.post('/:id/return', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARI
     if (loan.book) {
       await loan.book.update({ stock: (loan.book.stock || 0) + 1 });
     }
-    // Quota handling: if overdue (returned after dueAt), penalize by -1; else restore +1
+  // Xử lý quota: nếu quá hạn (trả sau dueAt) thì không cộng; ngược lại +1
     const reader = await Reader.findByPk(loan.readerId);
     if (reader) {
       const returnedAt = loan.returnedAt ? new Date(loan.returnedAt).getTime() : Date.now();
@@ -83,7 +83,7 @@ router.post('/:id/return', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARI
   }
 });
 
-// PUT update due date
+// PUT cập nhật hạn trả (dueAt)
 router.put('/:id/due', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const { dueAt } = req.body || {};
@@ -98,12 +98,12 @@ router.put('/:id/due', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN])
   }
 });
 
-// DELETE loan
+// DELETE lượt mượn
 router.delete('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const loan = await Loan.findByPk(req.params.id, { include: [{ model: Book, as: 'book' }] });
     if (!loan) return res.status(404).json({ message: 'Không tìm thấy lượt mượn' });
-    // If deleting an active loan, restore stock
+  // Nếu xóa lượt mượn còn hiệu lực, hoàn trả tồn kho
     if (!loan.returnedAt && loan.book) {
       await loan.book.update({ stock: (loan.book.stock || 0) + 1 });
     }

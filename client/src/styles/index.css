@@ -266,6 +266,25 @@ a:hover {
 .thumb { display:block; border-radius: var(--radius-sm); object-fit: cover; background:#f3f4f6; }
 .thumb--sm { width: 60px; height: 60px; }
 
+/* BrowseBooks: card hover, skeletons, and badges */
+.book-card { transition: box-shadow .2s ease, transform .2s ease; }
+.book-card:hover { box-shadow: 0 12px 24px rgba(0,0,0,0.12); transform: translateY(-2px); }
+.thumb-wrap { overflow:hidden; border-bottom:1px solid #eee; }
+.book-card .card-img-top { transition: transform .25s ease; }
+.book-card:hover .card-img-top { transform: scale(1.02); }
+.thumb-placeholder { height: 180px; display:flex; align-items:center; justify-content:center; background:#f3f4f6; color:#6b7280; font-size: 14px; }
+
+.bg-primary-soft { background: rgba(31,111,235,0.12); color:#1f6feb; }
+.badge.bg-primary-soft { border:1px solid rgba(31,111,235,0.22); }
+
+/* Skeleton loading */
+.skeleton-card { overflow:hidden; }
+.skeleton { background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; border-radius: 6px; }
+.skeleton-img { height: 180px; }
+.skeleton-text { height: 16px; margin: 8px 0; }
+.skeleton-text.short { width: 60%; }
+@keyframes shimmer { 0%{ background-position: -200% 0;} 100%{ background-position: 200% 0;} }
+
 /* Utility classes */
 .mt-2 { margin-top: var(--space-2); }
 .mt-3 { margin-top: var(--space-3); }

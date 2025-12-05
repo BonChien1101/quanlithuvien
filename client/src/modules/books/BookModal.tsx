@@ -44,14 +44,14 @@ export default function BookModal({ open, initial, onClose, onSubmit }: Props){
     }
   },[open]);
 
-  // Load categories when modal opens
+  // Tải danh sách thể loại khi modal mở
   useEffect(()=>{
     (async ()=>{
       if(open){
         try {
           const data = await categoryApi.list();
           setCategories(data);
-        } catch(e){ /* ignore for modal */ }
+  } catch(e){ /* bỏ qua lỗi trong modal */ }
       }
     })();
   },[open]);

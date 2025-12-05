@@ -2,11 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { categoryApi, Category } from '../../api/categoryApi';
 import { Spinner } from '../../components/Spinner';
 import { ErrorAlert } from '../../components/ErrorAlert';
+import { useAppSelector } from '../../store';
+import { selectRoles } from '../../features/appSlice';
 
 export default function CategoriesPage(){
   const [items, setItems] = useState<Category[]>([]);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
+  const roles = useAppSelector(selectRoles);
   const [qName, setQName] = useState('');
   const [name, setName] = useState('');
   const [editing, setEditing] = useState<Category|undefined>();
@@ -58,7 +61,7 @@ export default function CategoriesPage(){
           </div>
         </div>
         <table className="table table-striped">
-          <thead><tr><th>Mã</th><th>Tên</th><th>Loại sách</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+          <thead><tr><th>Mã</th><th>Tên</th><th>Loại sách</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
           <tbody>
             {items
               .filter(c => !qName ? true : (c.name||'').toLowerCase().includes(qName.toLowerCase()))
@@ -83,7 +86,9 @@ export default function CategoriesPage(){
                   >
                     {c.hidden ? 'Hiện' : 'Ẩn'}
                   </button>
-                  <button className="btn btn-sm btn-outline-danger" onClick={()=>remove(c.id!)}>Xóa</button>
+                  {roles.includes('ADMIN') && (
+                    <button className="btn btn-sm btn-outline-danger" onClick={()=>remove(c.id!)}>Xóa</button>
+                  )}
                 </td>
               </tr>
             ))}

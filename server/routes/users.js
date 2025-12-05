@@ -21,11 +21,11 @@ router.post('/', authenticate, requireRole([ROLES.ADMIN]), async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-// Chỉ admin mới xem được danh sách users
+// Chỉ ADMIN mới xem được danh sách người dùng
 router.get('/', authenticate, requireRole(['ADMIN']), async (req, res) => {
   try {
     const users = await User.findAll({ attributes: ['id','username','roles','createdAt'] });
-    // Parse roles from JSON string
+  // Chuyển chuỗi JSON roles về mảng (nếu cần)
     const usersWithParsedRoles = users.map(u => {
       const roles = typeof u.roles === 'string' ? JSON.parse(u.roles) : u.roles;
       return { id: u.id, username: u.username, roles };
@@ -37,7 +37,7 @@ router.get('/', authenticate, requireRole(['ADMIN']), async (req, res) => {
   }
 });
 
-// DELETE user (admin only)
+// XÓA user (chỉ ADMIN)
 router.delete('/:id', authenticate, requireRole(['ADMIN']), async (req, res) => {
   try {
     const targetUser = await User.findByPk(req.params.id);
@@ -50,7 +50,7 @@ router.delete('/:id', authenticate, requireRole(['ADMIN']), async (req, res) => 
       return res.status(400).json({ message: 'Không thể tự xóa chính mình' });
     }
 
-    // Parse roles for both requester and target
+  // Chuyển đổi roles cho cả người yêu cầu và đối tượng bị xóa
     const targetRoles = typeof targetUser.roles === 'string' ? JSON.parse(targetUser.roles) : targetUser.roles;
 
     // Nếu đang xóa một ADMIN, kiểm tra số lượng ADMIN còn lại

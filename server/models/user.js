@@ -6,7 +6,7 @@ module.exports = (sequelize) => {
     id: { type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true },
     username: { type: DataTypes.STRING(100), allowNull: false, unique: true },
     password: { type: DataTypes.STRING(200), allowNull: false },
-    roles: { type: DataTypes.TEXT, allowNull: true, // JSON string of roles
+  roles: { type: DataTypes.TEXT, allowNull: true, // Chuỗi JSON lưu danh sách vai trò
       get() {
         const raw = this.getDataValue('roles');
         try { return JSON.parse(raw || '[]'); } catch { return []; }

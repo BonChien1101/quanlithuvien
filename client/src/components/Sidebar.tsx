@@ -11,9 +11,11 @@ export default function Sidebar(){
     <aside className="sidebar">
       <div className="sidebar__brand">Library</div>
       <nav className="sidebar__nav">
-        <NavLink to="/" end className={({isActive})=>`sidebar__link ${isActive?'active':''}`}>
-          <span className="sidebar__icon"></span> Dashboard
-        </NavLink>
+        {canManage && (
+          <NavLink to="/" end className={({isActive})=>`sidebar__link ${isActive?'active':''}`}>
+            <span className="sidebar__icon"></span> Tổng quan
+          </NavLink>
+        )}
   {isAdmin && (
           <NavLink to="/users" className={({isActive})=>`sidebar__link ${isActive?'active':''}`}>
             <span className="sidebar__icon"></span> Quản trị hệ thống
@@ -36,7 +38,12 @@ export default function Sidebar(){
             <NavLink to="/reports" className={({isActive})=>`sidebar__link ${isActive?'active':''}`}><span className="sidebar__icon"></span> Báo cáo thống kê</NavLink>
           </>
         ) : (
-          <NavLink to="/borrow" className={({isActive})=>`sidebar__link ${isActive?'active':''}`}><span className="sidebar__icon"></span> Mượn sách</NavLink>
+          <>
+            <NavLink to="/user/browse" className={({isActive})=>`sidebar__link ${isActive?'active':''}`}>
+              <span className="sidebar__icon"></span> Thư Viện
+            </NavLink>
+
+          </>
         )}
       </nav>
     </aside>
