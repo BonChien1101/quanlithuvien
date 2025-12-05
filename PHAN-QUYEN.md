@@ -1,8 +1,8 @@
 # HỆ THỐNG PHÂN QUYỀN - QUẢN LÝ THƯ VIỆN
 
-## 🔐 Các Vai Trò Trong Hệ Thống
+##  Các Vai Trò Trong Hệ Thống
 
-### 1️⃣ ADMIN (Quản trị viên)
+### 1 ADMIN (Quản trị viên)
 **Quyền hạn:**
 - ✅ Toàn quyền quản lý hệ thống
 - ✅ Quản lý người dùng (xem, thêm, xóa, phân quyền)
@@ -18,7 +18,7 @@
 
 ---
 
-### 2️⃣ USER (Người dùng/Độc giả)
+### 2️ USER (Người dùng/Độc giả)
 **Quyền hạn:**
 - ✅ Xem danh sách sách
 - ✅ Tìm kiếm sách
@@ -33,7 +33,7 @@
 
 ---
 
-## 📊 So Sánh Quyền Hạn
+##  So Sánh Quyền Hạn
 
 | Chức năng | ADMIN | USER |
 |-----------|-------|------|
@@ -49,7 +49,7 @@
 
 ---
 
-## 🔧 Cách Hoạt Động
+##  Cách Hoạt Động
 
 ### Backend (Node.js + Express)
 1. **Authentication Middleware** (`server/middleware/auth.js`):
@@ -113,13 +113,13 @@ await User.bulkCreate([
 
 ---
 
-## 🚀 Cách Sử Dụng
+##  Cách Sử Dụng
 
 ### 1. Đăng nhập với vai trò khác nhau
 ```
 1. Vào http://localhost:3001
-2. Click nút "👨‍💼 ADMIN" để đăng nhập admin
-3. Hoặc click "👤 NGƯỜI DÙNG" để đăng nhập user
+2. Click nút " ADMIN" để đăng nhập admin
+3. Hoặc click " NGƯỜI DÙNG" để đăng nhập user
 4. Xem sự khác biệt về menu và quyền truy cập
 ```
 
@@ -145,7 +145,7 @@ Headers: Authorization: Bearer <token>
 
 ---
 
-## 🔒 Bảo Mật
+##  Bảo Mật
 
 1. **Password**: Mã hóa bằng bcrypt (10 rounds)
 2. **JWT Token**: Lưu trong localStorage, expire sau 24h
@@ -156,7 +156,7 @@ Headers: Authorization: Bearer <token>
 
 ---
 
-## 📝 Lưu Ý
+##  Lưu Ý
 
 1. **Đổi mật khẩu mặc định** trong production
 2. **JWT_SECRET** phải đổi thành chuỗi bí mật phức tạp
@@ -166,18 +166,18 @@ Headers: Authorization: Bearer <token>
 
 ---
 
-## 🎯 Mở Rộng Thêm
+##  Mở Rộng Thêm
 
 ### Các tính năng có thể thêm:
-- ✨ Đăng ký tài khoản USER tự động
-- ✨ Quên mật khẩu & reset qua email
-- ✨ 2FA (Two-Factor Authentication)
-- ✨ Session timeout tự động logout
-- ✨ Lịch sử hoạt động của user
-- ✨ Khóa tài khoản khi login sai nhiều lần
-- ✨ Role "LIBRARIAN" cho thủ thư (nếu cần mở rộng)
-- ✨ Role "TEACHER" cho giáo viên
-- ✨ Phân quyền chi tiết hơn (READ, WRITE, DELETE)
+-  Đăng ký tài khoản USER tự động
+-  Quên mật khẩu & reset qua email
+-  2FA (Two-Factor Authentication)
+-  Session timeout tự động logout
+-  Lịch sử hoạt động của user
+-  Khóa tài khoản khi login sai nhiều lần
+-  Role "LIBRARIAN" cho thủ thư (nếu cần mở rộng)
+-  Role "TEACHER" cho giáo viên
+-  Phân quyền chi tiết hơn (READ, WRITE, DELETE)
 
 ---
 
