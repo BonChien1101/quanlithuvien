@@ -15,6 +15,8 @@ import Dashboard from './Dashboard';
 import UsersPage from './users/UsersPage';
 import BorrowPage from './loans/BorrowPage';
 import CategoriesPage from './categories/CategoriesPage';
+import MyLibraryPage from './user/MyLibraryPage';
+import BrowseBooksPage from './user/BrowseBooksPage';
 
 function Home() {
   return <div className="container py-4"><h1>Library Management</h1><p>Trang chủ</p></div>;
@@ -52,6 +54,8 @@ export default function App() {
               <Route path="/loans" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><LoansPage/></RequireRole>} />
               <Route path="/reports" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><ReportsPage/></RequireRole>} />
               <Route path="/borrow" element={<RequireRole roles={['USER']}><BorrowPage/></RequireRole>} />
+              <Route path="/my-library" element={<RequireRole roles={['USER']}><MyLibraryPage/></RequireRole>} />
+              <Route path="/browse-books" element={<RequireRole roles={['USER']}><BrowseBooksPage/></RequireRole>} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>

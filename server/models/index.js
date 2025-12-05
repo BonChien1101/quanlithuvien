@@ -28,6 +28,10 @@ db.Loan = require('./loan')(sequelize);
 db.Category.hasMany(db.Book, { foreignKey: 'categoryId', as: 'books' });
 db.Book.belongsTo(db.Category, { foreignKey: 'categoryId', as: 'category' });
 
+// User-Reader association
+db.User.hasOne(db.Reader, { foreignKey: 'userId', as: 'reader' });
+db.Reader.belongsTo(db.User, { foreignKey: 'userId', as: 'user' });
+
 // Reader associations
 db.Reader.hasMany(db.Loan, { foreignKey: 'readerId', as: 'loans' });
 db.Loan.belongsTo(db.Reader, { foreignKey: 'readerId', as: 'reader' });

@@ -37,10 +37,10 @@ export default function Login(){
       }
   console.log('Vai trò người dùng:', assignedRoles);
         dispatch(setAuth({ token: tokenValue, roles: assignedRoles }));
-      // Điều hướng: nếu là USER  -> /borrow, ngược lại về /
-      const isManager = assignedRoles.some((r)=>['ADMIN'].includes(r));
-  console.log('Điều hướng tới:', isManager ? '/' : '/borrow');
-      if(!isManager && assignedRoles.includes('USER')) navigate('/borrow');
+      // Điều hướng: nếu là USER  -> /my-library, ngược lại về /
+      const isManager = assignedRoles.some((r)=>['ADMIN','LIBRARIAN'].includes(r));
+  console.log('Điều hướng tới:', isManager ? '/' : '/my-library');
+      if(!isManager && assignedRoles.includes('USER')) navigate('/my-library');
       else navigate('/');
     } catch(err: any){
   console.error('Lỗi đăng nhập:', err);

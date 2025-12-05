@@ -11,7 +11,6 @@ export default function BookList(){
   // search filter state
   const [filterTitle, setFilterTitle] = useState(''); // Bộ lọc tiêu đề (gửi lên /api/books/search)
   const [filterAuthor, setFilterAuthor] = useState(''); // Bộ lọc tác giả (gửi lên /api/books/search)
-  const [showHidden, setShowHidden] = useState(false); // Hiển thị sách đã ẩn
   const [editing, setEditing] = useState<BookDTO|undefined>();
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -82,28 +81,15 @@ export default function BookList(){
           <div className="col"><input placeholder="Lọc tiêu đề" className="form-control" value={filterTitle} onChange={e=>setFilterTitle(e.target.value)} /></div>
           <div className="col"><input placeholder="Lọc tác giả" className="form-control" value={filterAuthor} onChange={e=>setFilterAuthor(e.target.value)} /></div>
           <div className="col-auto"><button className="btn btn-primary" onClick={load}>Tìm kiếm</button></div>
-          <div className="col-auto">
-            <div className="form-check">
-              <input 
-                className="form-check-input" 
-                type="checkbox" 
-                id="showHidden"
-                checked={showHidden} 
-                onChange={e=>setShowHidden(e.target.checked)} 
-              />
-              <label className="form-check-label" htmlFor="showHidden">
-                Hiện sách đã ẩn
-              </label>
-            </div>
-          </div>
         </div>
         {loading && <Spinner/>}
         <ErrorAlert error={error} />
         <table className="table table-striped">
-          <thead><tr><th>Mã</th><th>Tiêu đề</th><th>Tác giả</th><th>Tồn kho</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+          <thead><tr><th>STT</th><th>Mã</th><th>Tiêu đề</th><th>Tác giả</th><th>Tồn kho</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
           <tbody>
-            {books.filter(b => showHidden || !b.hidden).map(b => (
+            {books.map((b, index) => (
               <tr key={b.id} className={b.hidden ? 'table-secondary text-muted' : ''}>
+                <td>{index + 1}</td>
                 <td>{b.code}</td>
                 <td>{b.title}</td>
                 <td>{b.author}</td>

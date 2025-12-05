@@ -47,4 +47,91 @@ router.get('/reader/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIA
   }
 });
 
+// GET /api/reports/dashboard-stats
+router.get('/dashboard-stats', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
+  try {
+    // Tổng số sách, độc giả, lượt mượn
+    const totalBooks = await Book.count();
+    const totalReaders = await Reader.count();
+    const totalLoans = await Loan.count();
+    
+    // Số sách đang được mượn (chưa trả)
+    const borrowedBooks = await Loan.count({ where: { returnedAt: null } });
+    
+    // Số sách quá hạn (dueAt < now và chưa trả)
+    const now = new Date();
+    const overdueBooks = await Loan.count({ 
+      where: { 
+        returnedAt: null,
+        dueAt: { [Op.lt]: now, [Op.ne]: null }
+      } 
+    });
+    
+    // Số sách sắp hết (stock <= 5)
+    const lowStockBooks = await Book.count({ where: { stock: { [Op.lte]: 5, [Op.gt]: 0 } } });
+    
+    // Số sách hết hàng (stock = 0)
+    const outOfStockBooks = await Book.count({ where: { stock: 0 } });
+    
+    res.json({
+      totalBooks,
+      totalReaders,
+      totalLoans,
+      borrowedBooks,
+      overdueBooks,
+      lowStockBooks,
+      outOfStockBooks
+    });
+  } catch (err) {
+    console.error('Lỗi lấy thống kê dashboard:', err);
+    res.status(500).json({ message: 'Lỗi máy chủ' });
+  }
+});
+
+// GET /api/reports/loan-trends - Thống kê xu hướng mượn/trả theo ngày (7 ngày gần nhất)
+router.get('/loan-trends', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
+  try {
+    const days = 7;
+    const trends = [];
+    
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      
+      const nextDate = new Date(date);
+      nextDate.setDate(nextDate.getDate() + 1);
+      
+      const borrowed = await Loan.count({
+        where: {
+          borrowedAt: {
+            [Op.gte]: date,
+            [Op.lt]: nextDate
+          }
+        }
+      });
+      
+      const returned = await Loan.count({
+        where: {
+          returnedAt: {
+            [Op.gte]: date,
+            [Op.lt]: nextDate
+          }
+        }
+      });
+      
+      trends.push({
+        date: date.toISOString().split('T')[0],
+        borrowed,
+        returned
+      });
+    }
+    
+    res.json(trends);
+  } catch (err) {
+    console.error('Lỗi lấy xu hướng mượn/trả:', err);
+    res.status(500).json({ message: 'Lỗi máy chủ' });
+  }
+});
+
 module.exports = router;

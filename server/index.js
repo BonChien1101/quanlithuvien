@@ -12,6 +12,7 @@ const categoriesRoutes = require('./routes/categories');
 const readersRoutes = require('./routes/readers');
 const loansRoutes = require('./routes/loans');
 const reportsRoutes = require('./routes/reports');
+const myLibraryRoutes = require('./routes/my-library');
 
 const app = express();
 app.use(cors());
@@ -25,6 +26,7 @@ app.use('/api/categories', categoriesRoutes);
 app.use('/api/readers', readersRoutes);
 app.use('/api/loans', loansRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/my-library', myLibraryRoutes);
 
 const port = process.env.PORT || 8080;
 
