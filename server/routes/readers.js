@@ -4,7 +4,7 @@ const { Reader } = require('../models');
 const { Op } = require('sequelize');
 const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 
-// GET all readers
+// GET tất cả độc giả
 router.get('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const { q } = req.query;
@@ -18,7 +18,7 @@ router.get('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async
       { contact: { [Op.like]: `%${term}%` } },
       { email: { [Op.like]: `%${term}%` } },
       { address: { [Op.like]: `%${term}%` } },
-      // normalized phone/contact: remove spaces and dashes before matching
+  // Chuẩn hóa phone/contact: bỏ khoảng trắng và dấu gạch trước khi so khớp
       require('../models').sequelize.where(
         require('../models').sequelize.fn('REPLACE', require('../models').sequelize.fn('REPLACE', require('../models').sequelize.col('phone'), ' ', ''), '-', ''),
         { [Op.like]: `%${String(term).replace(/[-\s]/g,'')}%` }
@@ -37,7 +37,7 @@ router.get('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async
   }
 });
 
-// GET reader by id
+// GET độc giả theo id
 router.get('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const reader = await Reader.findByPk(req.params.id);
@@ -50,7 +50,7 @@ router.get('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), as
   }
 });
 
-// POST create reader
+// POST tạo độc giả
 router.post('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const { name, contact, quota, phone, email, gender, dob, address, note } = req.body || {};
@@ -63,7 +63,7 @@ router.post('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), asyn
     if (!address || !String(address).trim()) return res.status(400).json({ message: 'Thiếu địa chỉ' });
     if (quota == null) return res.status(400).json({ message: 'Thiếu quota' });
     if (Number(quota) < 0) return res.status(400).json({ message: 'Quota không hợp lệ' });
-    // Validate giá trị
+  // Kiểm tra tính hợp lệ của dữ liệu
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) return res.status(400).json({ message: 'Email không hợp lệ' });
     if (!['male','female','other'].includes(String(gender))) return res.status(400).json({ message: 'Giới tính không hợp lệ' });
     if (String(phone).length > 20) return res.status(400).json({ message: 'SĐT quá dài' });
@@ -87,7 +87,7 @@ router.post('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), asyn
   }
 });
 
-// PUT update reader
+// PUT cập nhật độc giả
 router.put('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const reader = await Reader.findByPk(req.params.id);
@@ -105,8 +105,8 @@ router.put('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), as
   }
 });
 
-// DELETE reader
-router.delete('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
+// DELETE độc giả (chỉ ADMIN)
+router.delete('/:id', authenticate, requireRole([ROLES.ADMIN]), async (req, res) => {
   try {
     const reader = await Reader.findByPk(req.params.id);
     if (!reader) return res.status(404).json({ message: 'Không tìm thấy độc giả' });

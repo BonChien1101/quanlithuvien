@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'change_me';
 
-// Role constants
+// Hằng số vai trò
 const ROLES = {
   ADMIN: 'ADMIN',
   LIBRARIAN: 'LIBRARIAN',

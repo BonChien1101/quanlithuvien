@@ -73,7 +73,7 @@ export default function UsersPage(){
                 <th>Mã</th>
                 <th>Tên đăng nhập</th>
                 <th>Vai trò</th>
-                <th>Hành động</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>

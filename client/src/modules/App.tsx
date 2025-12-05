@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Link, Navigate } from 'react-router-dom';
+import { Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import Signup from './Signup';
 import Login from './Login';
 import { useAppDispatch, useAppSelector } from '../store';
@@ -13,20 +13,23 @@ import ReportsPage from './reports/ReportsPage';
 import Sidebar from '../components/Sidebar';
 import Dashboard from './Dashboard';
 import UsersPage from './users/UsersPage';
-import BorrowPage from './loans/BorrowPage';
-import CategoriesPage from './categories/CategoriesPage';
 
-function Home() {
-  return <div className="container py-4"><h1>Library Management</h1><p>Trang chủ</p></div>;
-}
+import CategoriesPage from './categories/CategoriesPage';
+import RequireAuth from './auth/RequireAuth';
+import BrowseBooksPage from './user/BrowseBooksPage';
+
+import UserHome from './user/Home';
 
 export default function App() {
   const token = useAppSelector(selectToken);
   const roles = useAppSelector(selectRoles);
     const dispatch = useAppDispatch();
+  const location = useLocation();
+  //ẩn sidebar nếu ở khu user
+  const isUserArea = location.pathname === '/user' || location.pathname.startsWith('/user/');
     return ( // gdien chinh
-      <div className={token ? 'layout' : 'layout layout--no-sidebar'}>
-        {token && <Sidebar />}
+      <div className={(token && !isUserArea) ? 'layout' : 'layout layout--no-sidebar'}>
+        {token && !isUserArea && <Sidebar />}
         <div className="layout__main">
           <div className="topbar">
             <div className="topbar__actions">
@@ -42,7 +45,8 @@ export default function App() {
           </div>
           <main className="content container-narrow">
             <Routes> 
-              <Route path="/" element={token ? <Dashboard/> : <Navigate to="/login" replace />} />
+              {/* Trang chủ có quyền admin lib thì vào Dashboard, ngược lại chuyển tới trang chủ User */}
+              <Route path="/" element={token ? (roles.some(r=>['ADMIN','LIBRARIAN'].includes(r)) ? <Dashboard/> : <Navigate to="/user" replace />) : <Navigate to="/login" replace />} />
               <Route path="/login" element={<Login/>} />
               <Route path="/signup" element={<Signup/>} />
               <Route path="/books" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><BookList/></RequireRole>} />
@@ -51,7 +55,12 @@ export default function App() {
               <Route path="/readers" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><ReadersPage/></RequireRole>} />
               <Route path="/loans" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><LoansPage/></RequireRole>} />
               <Route path="/reports" element={<RequireRole roles={['ADMIN','LIBRARIAN']}><ReportsPage/></RequireRole>} />
-              <Route path="/borrow" element={<RequireRole roles={['USER']}><BorrowPage/></RequireRole>} />
+
+              {/* trang của user */}
+              <Route path="/user" element={<RequireAuth><UserHome/></RequireAuth>} />
+              <Route path="/user/browse" element={<RequireAuth><BrowseBooksPage/></RequireAuth>} />
+
+
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>

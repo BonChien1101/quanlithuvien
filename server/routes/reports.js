@@ -4,11 +4,10 @@ const { Loan, Book, Reader } = require('../models');
 const { Op } = require('sequelize');
 const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 
-// GET /api/reports/inventory
+// GET /api/reports/inventory - Tồn kho: {bookId, code, title, stock}
 router.get('/inventory', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
   const books = await Book.findAll({ attributes: ['id','code','title','stock'] });
-  // Return a simple array matching client expectations: { bookId, code, title, stock }
   const inventory = books.map(b => ({ bookId: b.id, code: b.code, title: b.title, stock: b.stock }));
   res.json(inventory);
   } catch (err) {
@@ -17,11 +16,10 @@ router.get('/inventory', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN
   }
 });
 
-// GET /api/reports/inventory/low -> sách sắp hết (stock ≤ 3)
 router.get('/inventory/low', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
-    const threshold = parseInt(String(req.query.threshold || 3), 10);
-  const books = await Book.findAll({ attributes: ['id','code','title','stock'], where: { stock: { [Op.lte]: threshold } }, order: [['stock','ASC']] });
+  const threshold = parseInt(String(req.query.threshold || 5), 10); // ngưỡng cảnh báo tồn kho
+  const books = await Book.findAll({ attributes: ['id','code','title','stock'], where: { stock: { [Op.lte]: threshold, [Op.gt]: 0 } }, order: [['stock','ASC']] });
   res.json(books.map(b=>({ bookId: b.id, code: b.code, title: b.title, stock: b.stock })));
   } catch (err) {
     console.error('Lỗi báo cáo sách sắp hết:', err);
@@ -55,14 +53,14 @@ router.get('/overview', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]
     res.status(500).json({ message: 'Lỗi máy chủ' });
   }
 });
-// GET /api/reports/summary?period=week|month
+// GET /api/reports/summary?period=week|month - Tổng hợp theo tuần/tháng
 router.get('/summary', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const period = req.query.period === 'month' ? 'month' : 'week';
     const now = new Date();
     let start;
     let end;
-    // Accept explicit start/end ISO dates or year/month
+  // Chấp nhận tham số start/end (ISO) hoặc year/month
     const { start: startQ, end: endQ, year, month } = req.query;
     if (startQ || endQ) {
       start = startQ ? new Date(String(startQ)) : new Date(now);
@@ -76,7 +74,7 @@ router.get('/summary', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN])
       start = new Date(Date.UTC(y, m - 1, 1, 0, 0, 0));
       end = new Date(Date.UTC(y, m, 0, 23, 59, 59));
     } else {
-      // Default last week/month until now
+  // Mặc định: tuần/tháng gần nhất đến thời điểm hiện tại
       end = now;
       start = new Date(now);
       if (period === 'week') start.setDate(now.getDate() - 7); else start.setMonth(now.getMonth() - 1);
@@ -90,8 +88,8 @@ router.get('/summary', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN])
   }
 });
 
-// GET /api/reports/reader/:id
-// Ensure only numeric IDs are accepted and guard against NaN
+// GET /api/reports/reader/:id - Thống kê theo độc giả
+// Chỉ chấp nhận ID dạng số, tránh NaN
 router.get('/reader/:id(\\d+)', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
@@ -136,7 +134,7 @@ router.get('/top-books', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN
       limit,
       raw: true
     });
-    // fetch titles separately to avoid GROUP + include issues
+  // Lấy tiêu đề riêng để tránh xung đột GROUP + include
     const results = [];
     for (const r of rows) {
       const bookId = r.bookId;
@@ -151,7 +149,7 @@ router.get('/top-books', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN
   }
 });
 
-// GET /api/reports/borrow-stats?days=7 -> số lượt mượn theo từng ngày
+// GET /api/reports/borrow-stats?days=7 -> Số lượt mượn theo từng ngày
 router.get('/borrow-stats', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const days = parseInt(String(req.query.days || 7), 10);
@@ -176,3 +174,28 @@ router.get('/borrow-stats', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRAR
 });
 
 module.exports = router;
+// Tổng hợp quá hạn: số lượt đang quá hạn (chưa trả) và số lượt đã trả trễ
+router.get('/overdue-summary', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
+  try {
+    const now = new Date();
+  // Đang quá hạn: dueAt < hiện tại, dueAt khác null, và chưa trả
+    const currentlyOverdue = await Loan.count({
+      where: {
+        returnedAt: null,
+        dueAt: { [Op.lt]: now, [Op.ne]: null }
+      }
+    });
+  // Đã trả trễ: returnedAt > dueAt
+    const returnedLate = await Loan.count({
+      where: {
+        returnedAt: { [Op.ne]: null },
+        dueAt: { [Op.ne]: null },
+        [Op.and]: [require('../models').sequelize.literal('returnedAt > dueAt')]
+      }
+    });
+    res.json({ currentlyOverdue, returnedLate });
+  } catch (err) {
+    console.error('Lỗi báo cáo quá hạn:', err);
+    res.status(500).json({ message: 'Lỗi máy chủ' });
+  }
+});

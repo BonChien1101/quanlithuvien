@@ -5,7 +5,7 @@ const S = require('../models').sequelize;
 const { Op } = require('sequelize');
 const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 
-// GET all categories
+// GET tất cả thể loại
 router.get('/', async (req, res) => {
   try {
     const page = Math.max(parseInt(String(req.query.page || 1), 10), 1);
@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
       limit,
       offset
     });
-    // compute book counts for categories in current page
+  // Tính số lượng sách theo thể loại trong trang hiện tại
     const ids = rows.map(c => c.id);
     let countMap = {};
     if (ids.length) {
@@ -59,7 +59,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST create new category
+// tạo thể loại mới
 router.post('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const { name, description } = req.body;
@@ -81,7 +81,7 @@ router.post('/', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), asyn
   }
 });
 
-// PUT update category
+//cập nhật thể loại
 router.put('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const category = await Category.findByPk(req.params.id);
@@ -112,7 +112,7 @@ router.put('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), as
   }
 });
 
-// POST toggle hidden status
+// POST chuyển đổi trạng thái ẩn/hiện
 router.post('/:id/toggle', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const category = await Category.findByPk(req.params.id);
@@ -137,8 +137,8 @@ router.post('/:id/toggle', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARI
   }
 });
 
-// DELETE category
-router.delete('/:id', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
+// DELETE category (chỉ ADMIN)
+router.delete('/:id', authenticate, requireRole([ROLES.ADMIN]), async (req, res) => {
   try {
     const category = await Category.findByPk(req.params.id);
     if (!category) {

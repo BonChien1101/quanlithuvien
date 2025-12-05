@@ -13,7 +13,7 @@ const sequelize = new Sequelize(dbName, user, pass, {
   dialect: 'mysql',
   logging: false,
   dialectOptions: {
-    // adjust if needed
+  // điều chỉnh nếu cần thiết
   }
 });
 
@@ -24,15 +24,19 @@ db.Category = require('./category')(sequelize);
 db.Reader = require('./reader')(sequelize);
 db.Loan = require('./loan')(sequelize);
 
-// Define associations
+// Định nghĩa các mối quan hệ
 db.Category.hasMany(db.Book, { foreignKey: 'categoryId', as: 'books' });
 db.Book.belongsTo(db.Category, { foreignKey: 'categoryId', as: 'category' });
 
-// Reader associations
+// Quan hệ của Reader
 db.Reader.hasMany(db.Loan, { foreignKey: 'readerId', as: 'loans' });
 db.Loan.belongsTo(db.Reader, { foreignKey: 'readerId', as: 'reader' });
 
-// Book associations
+// Liên kết Reader với User để xác định quyền sở hữu
+db.User.hasOne(db.Reader, { foreignKey: 'userId', as: 'reader' });
+db.Reader.belongsTo(db.User, { foreignKey: 'userId', as: 'user' });
+
+// Quan hệ của Book
 db.Book.hasMany(db.Loan, { foreignKey: 'bookId', as: 'loans' });
 db.Loan.belongsTo(db.Book, { foreignKey: 'bookId', as: 'book' });
 

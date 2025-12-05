@@ -8,19 +8,31 @@
 //  DELETE /api/books/{id} -> remove()
 import axiosClient from './axiosClient';
 
-export interface BookDTO { id: number; code?: string; title: string; author?: string; imageUrl?: string; stock: number; categoryId?: number; hidden?: boolean; category?: { id: number; name: string }; }
+export interface BookDTO {
+  id: number;
+  code?: string;
+  title: string;
+  author?: string;
+  imageUrl?: string;
+  stock: number;
+  categoryId?: number;
+  hidden?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  category?: { id: number; name: string };
+}
 
 export const bookApi = {
   // Lấy toàn bộ sách
   async list(includeHidden?: boolean){
-  const rs = await axiosClient.get('/api/books', { params: { includeHidden: includeHidden ? 1 : 0 } });
+
+  const rs = await axiosClient.get('/api/books', { params: { includeHidden: includeHidden ? 1 : 0, page: 1, limit: 1000 } });
   const data = rs.data;
-  // Support both plain array and paginated shape { items: BookDTO[] }
   return (Array.isArray(data) ? data : (data?.items ?? [])) as BookDTO[];
   },
   // Tìm kiếm theo tiêu đề / tác giả 
   async search(title?: string, author?: string, includeHidden?: boolean){
-  const rs = await axiosClient.get('/api/books/search', { params: { title, author, includeHidden: includeHidden ? 1 : 0 } });
+  const rs = await axiosClient.get('/api/books/search', { params: { title, author, includeHidden: includeHidden ? 1 : 0, page: 1, limit: 1000 } });
   const data = rs.data;
   return (Array.isArray(data) ? data : (data?.items ?? [])) as BookDTO[];
   },

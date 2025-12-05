@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../store';
 import { selectToken } from '../../features/appSlice';
-
+// đây là component bảo vệ route cho user đã đăng nhập
 export default function RequireAuth({ children }: { children: JSX.Element }){
   const token = useAppSelector(selectToken);
   const loc = useLocation();
