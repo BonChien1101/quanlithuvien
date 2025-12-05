@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "webpack serve --config webpack.dev.js --open",
+  "start": "cross-env NODE_OPTIONS=--no-deprecation webpack serve --config webpack.dev.js --open",
     "build": "webpack --config webpack.prod.js",
     "typecheck": "tsc --noEmit",
     "test": "cross-env TZ=UTC jest --passWithNoTests"
