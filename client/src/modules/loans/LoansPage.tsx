@@ -20,12 +20,12 @@ export default function LoansPage(){
   const [bookId, setBookId] = useState<number>();
   const [readerId, setReaderId] = useState<number>();
   const [dueDraft, setDueDraft] = useState<Record<number, string>>({});
-  // Pagination states for both panels
+  // Phân trang và tìm kiếm
   const [pageActive, setPageActive] = useState(1);
-  const [limitActive, setLimitActive] = useState(10);
+  const [limitActive, setLimitActive] = useState(5); // Giới hạn số lượng đang mượn
   const [pageReturned, setPageReturned] = useState(1);
-  const [limitReturned, setLimitReturned] = useState(10);
-  // Search queries per panel
+  const [limitReturned, setLimitReturned] = useState(5); // Giới hạn số lượng trả về
+  // tìm kiếm cho cả hai bảng
   const [qBookActive, setQBookActive] = useState('');
   const [qReaderActive, setQReaderActive] = useState('');
   const [qBookReturned, setQBookReturned] = useState('');
@@ -46,10 +46,10 @@ export default function LoansPage(){
     } finally { setLoading(false); }
   };
   useEffect(()=>{ load(); }, [token]);
-  // Reset page to 1 if page size changes
+//reset trang khi thay đổi truy vấn tìm kiếm
   useEffect(()=>{ setPageActive(1); }, [limitActive]);
   useEffect(()=>{ setPageReturned(1); }, [limitReturned]);
-  // Reset page to 1 when search queries change
+  // reset trang khi thay đổi truy vấn tìm kiếm
   useEffect(()=>{ setPageActive(1); }, [qBookActive, qReaderActive]);
   useEffect(()=>{ setPageReturned(1); }, [qBookReturned, qReaderReturned]);
 

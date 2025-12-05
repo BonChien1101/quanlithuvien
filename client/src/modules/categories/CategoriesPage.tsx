@@ -6,7 +6,7 @@ import { ErrorAlert } from '../../components/ErrorAlert';
 export default function CategoriesPage(){
   const [items, setItems] = useState<Category[]>([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(5);
   const [qName, setQName] = useState('');
   const [name, setName] = useState('');
   const [editing, setEditing] = useState<Category|undefined>();
@@ -58,7 +58,7 @@ export default function CategoriesPage(){
           </div>
         </div>
         <table className="table table-striped">
-          <thead><tr><th>Mã</th><th>Tên</th><th>Số sách</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+          <thead><tr><th>Mã</th><th>Tên</th><th>Loại sách</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
           <tbody>
             {items
               .filter(c => !qName ? true : (c.name||'').toLowerCase().includes(qName.toLowerCase()))

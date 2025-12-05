@@ -13,7 +13,7 @@ export default function ReportsPage(){
   const [topBooks, setTopBooks] = useState<any[]>([]);
   const [borrowStats, setBorrowStats] = useState<any[]>([]);
   const [page, setPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [pageSize, setPageSize] = useState<number>(5);
 
   const [readerId, setReaderId] = useState<string>('');
   const [readerReport, setReaderReport] = useState<any>(null);
