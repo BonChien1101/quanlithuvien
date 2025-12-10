@@ -4,7 +4,7 @@ const { Loan, Book, Reader } = require('../models');
 const { Op } = require('sequelize');
 const { authenticate, requireRole, ROLES } = require('../middleware/auth');
 
-// GET /api/reports/inventory - Tồn kho: {bookId, code, title, stock}
+// lấy api báo cáo tồn kho
 router.get('/inventory', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
   const books = await Book.findAll({ attributes: ['id','code','title','stock'] });
@@ -27,7 +27,7 @@ router.get('/inventory/low', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRA
   }
 });
 
-// GET /api/reports/overview -> tổng quan hoạt động trong khoảng thời gian (mặc định 30 ngày gần nhất)
+
 router.get('/overview', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const now = new Date();
@@ -35,16 +35,15 @@ router.get('/overview', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]
     let start = startQ ? new Date(String(startQ)) : new Date(now);
     let end = endQ ? new Date(String(endQ)) : new Date(now);
     if (!startQ) start.setDate(now.getDate() - 30);
-    // Tổng số lượt mượn
+
     const totalBorrowed = await Loan.count({ where: { borrowedAt: { [Op.between]: [start, end] } } });
-    // Tổng số lượt trả
     const totalReturned = await Loan.count({ where: { returnedAt: { [Op.between]: [start, end] } } });
-    // Tổng số bạn đọc phát sinh giao dịch
+
     const readersBorrowed = await Loan.findAll({ attributes: [[require('../models').sequelize.fn('DISTINCT', require('../models').sequelize.col('readerId')), 'readerId']], where: { borrowedAt: { [Op.between]: [start, end] } } });
     const readersReturned = await Loan.findAll({ attributes: [[require('../models').sequelize.fn('DISTINCT', require('../models').sequelize.col('readerId')), 'readerId']], where: { returnedAt: { [Op.between]: [start, end] } } });
     const readerIds = new Set([ ...readersBorrowed.map(r=>r.get('readerId')), ...readersReturned.map(r=>r.get('readerId')) ]);
     const totalActiveReaders = readerIds.size;
-    // Tổng số sách khác nhau được mượn
+ 
     const distinctBooks = await Loan.findAll({ attributes: [[require('../models').sequelize.fn('DISTINCT', require('../models').sequelize.col('bookId')), 'bookId']], where: { borrowedAt: { [Op.between]: [start, end] } } });
     const totalDistinctBooksBorrowed = distinctBooks.length;
     res.json({ start: start.toISOString(), end: end.toISOString(), totalBorrowed, totalReturned, totalActiveReaders, totalDistinctBooksBorrowed });
@@ -53,14 +52,13 @@ router.get('/overview', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]
     res.status(500).json({ message: 'Lỗi máy chủ' });
   }
 });
-// GET /api/reports/summary?period=week|month - Tổng hợp theo tuần/tháng
+// thop theo tuần/tháng
 router.get('/summary', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const period = req.query.period === 'month' ? 'month' : 'week';
     const now = new Date();
     let start;
     let end;
-  // Chấp nhận tham số start/end (ISO) hoặc year/month
     const { start: startQ, end: endQ, year, month } = req.query;
     if (startQ || endQ) {
       start = startQ ? new Date(String(startQ)) : new Date(now);
@@ -74,7 +72,6 @@ router.get('/summary', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN])
       start = new Date(Date.UTC(y, m - 1, 1, 0, 0, 0));
       end = new Date(Date.UTC(y, m, 0, 23, 59, 59));
     } else {
-  // Mặc định: tuần/tháng gần nhất đến thời điểm hiện tại
       end = now;
       start = new Date(now);
       if (period === 'week') start.setDate(now.getDate() - 7); else start.setMonth(now.getMonth() - 1);
@@ -88,8 +85,7 @@ router.get('/summary', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN])
   }
 });
 
-// GET /api/reports/reader/:id - Thống kê theo độc giả
-// Chỉ chấp nhận ID dạng số, tránh NaN
+//tke theo độc giả
 router.get('/reader/:id(\\d+)', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
@@ -119,7 +115,7 @@ router.get('/reader/:id(\\d+)', authenticate, requireRole([ROLES.ADMIN, ROLES.LI
 });
 
 
-// GET /api/reports/top-books?limit=5&start=&end= -> Top N sách được mượn
+// top sách
 router.get('/top-books', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const limit = parseInt(String(req.query.limit || 5), 10);
@@ -134,7 +130,7 @@ router.get('/top-books', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN
       limit,
       raw: true
     });
-  // Lấy tiêu đề riêng để tránh xung đột GROUP + include
+  // Lấy tiêu đề sách
     const results = [];
     for (const r of rows) {
       const bookId = r.bookId;
@@ -149,7 +145,7 @@ router.get('/top-books', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN
   }
 });
 
-// GET /api/reports/borrow-stats?days=7 -> Số lượt mượn theo từng ngày
+// thống kê mượn theo ngày
 router.get('/borrow-stats', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const days = parseInt(String(req.query.days || 7), 10);
@@ -174,11 +170,11 @@ router.get('/borrow-stats', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRAR
 });
 
 module.exports = router;
-// Tổng hợp quá hạn: số lượt đang quá hạn (chưa trả) và số lượt đã trả trễ
+// Quá hạn/trả trễ
 router.get('/overdue-summary', authenticate, requireRole([ROLES.ADMIN, ROLES.LIBRARIAN]), async (req, res) => {
   try {
     const now = new Date();
-  // Đang quá hạn: dueAt < hiện tại, dueAt khác null, và chưa trả
+  // Đang quá hạn: dueAt < hiện tại
     const currentlyOverdue = await Loan.count({
       where: {
         returnedAt: null,

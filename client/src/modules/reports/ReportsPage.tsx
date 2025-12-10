@@ -9,10 +9,17 @@ import { selectToken } from '../../features/appSlice';
 export default function ReportsPage(){
   const token = useAppSelector(selectToken);
   const [inventory, setInventory] = useState<any[]>([]);
-  const [lowStock, setLowStock] = useState<any[]>([]);
+  const [lowStock, setLowStock] = useState<any[]>([]); 
   const [overview, setOverview] = useState<any>(null);
-  const [topBooks, setTopBooks] = useState<any[]>([]);
+  const [topBooks, setTopBooks] = useState<any[]>([]); 
   const [borrowStats, setBorrowStats] = useState<any[]>([]);
+  const [summary, setSummary] = useState<{ period: 'week'|'month'; start: string; end: string; borrowed: number; returned: number } | null>(null);
+  const [summaryPeriod, setSummaryPeriod] = useState<'week'|'month'>('week');
+  const [summaryYear, setSummaryYear] = useState<number>(new Date().getFullYear());
+  const [summaryMonth, setSummaryMonth] = useState<number>(new Date().getMonth()+1);
+  // tuần
+  const [summaryWeekStart, setSummaryWeekStart] = useState<string>('');
+  const [summaryWeekEnd, setSummaryWeekEnd] = useState<string>('');
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(5);
   const [overdueSummary, setOverdueSummary] = useState<{ currentlyOverdue: number; returnedLate: number } | null>(null);
@@ -55,14 +62,15 @@ export default function ReportsPage(){
     try {
       try {
         setError(undefined);
-        const [inv, ov, low, top, stats, overdue, loans] = await Promise.all([
+        const [inv, ov, low, top, stats, overdue, loans, sum] = await Promise.all([
           reportApi.inventory(),
           reportApi.overview(),
           reportApi.lowStock(5),
           reportApi.topBooks(5),
-          reportApi.borrowStats(7),
-          reportApi.overdueSummary(),
-          loanApi.list()
+          reportApi.borrowStats(7), 
+          reportApi.overdueSummary(), 
+          loanApi.list(),
+          reportApi.summary('week')
         ]);
         setInventory(inv);
         setOverview(ov);
@@ -72,6 +80,7 @@ export default function ReportsPage(){
         setOverdueSummary(overdue);
         setAllLoans(loans);
         setCurrentLoans(loans.filter((l:any)=>!l.returnedAt));
+  setSummary(sum);
         setPage(1);
       } catch(e:any){
         const status = e?.response?.status;
@@ -82,6 +91,41 @@ export default function ReportsPage(){
     } finally { setLoading(false); }
   };
   useEffect(()=>{ load(); }, [token]);
+
+  // Fetch summary when controls change
+  useEffect(()=>{
+    const fetchSummary = async () => {
+      try {
+        setError(undefined);
+        if (summaryPeriod === 'month') {
+          const y = summaryYear;
+          const m = summaryMonth;
+          const data = await reportApi.summary('month', { year: y, month: m });
+          setSummary(data);
+        } else {
+          // Nếu user chọn ngày bắt đầu/kết thúc thì dùng, nếu không sẽ mặc định tuần gần đây
+          const start = summaryWeekStart ? new Date(summaryWeekStart) : null;
+          const end = summaryWeekEnd ? new Date(summaryWeekEnd) : null;
+          let extra: Record<string, any> | undefined = undefined;
+          if (start || end) {
+            const s = start ? new Date(Date.UTC(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0)).toISOString() : undefined;
+            const e = end ? new Date(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59)).toISOString() : undefined;
+            extra = { ...(s?{ start: s }:{}), ...(e?{ end: e }:{}) };
+          }
+          const data = await reportApi.summary('week', extra);
+          setSummary(data);
+        }
+      } catch (e:any) {
+        const status = e?.response?.status;
+        if (status === 401) setError('Chưa đăng nhập hoặc phiên hết hạn.');
+        else if (status === 403) setError('Bạn không có quyền xem báo cáo.');
+        else setError(e?.message || 'Lỗi tải báo cáo tóm tắt');
+        setSummary(null);
+      }
+    };
+    fetchSummary();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [summaryPeriod, summaryYear, summaryMonth, summaryWeekStart, summaryWeekEnd]);
 
   const fetchReader = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,7 +150,7 @@ export default function ReportsPage(){
     }
   };
 
-  // Tạo ánh xạ bookId -> code từ inventory
+  // bookid -> code
   const bookIdToCode = React.useMemo(()=>{
     const map: Record<number, string> = {};
     inventory.forEach(b => {
@@ -149,6 +193,76 @@ export default function ReportsPage(){
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Tóm tắt theo tuần/tháng */}
+      <div className="row g-3 mb-3">
+        <div className="col-12">
+          <div className="panel shadow-sm border rounded-4" style={{background:'#fff'}}>
+            <div className="panel__header fw-bold fs-6 d-flex align-items-center justify-content-between" style={{letterSpacing:1, background:'#e3f2fd', color:'#1565c0', borderRadius:'8px', padding:'8px 12px'}}>
+              <span>Tóm tắt theo kỳ</span>
+              <div className="d-flex align-items-center gap-2">
+                <select className="form-select form-select-sm" style={{width:'auto'}} value={summaryPeriod} onChange={e=>setSummaryPeriod(e.target.value as 'week'|'month')}>
+                  <option value="week">Theo tuần</option>
+                  <option value="month">Theo tháng</option>
+                </select>
+                {summaryPeriod === 'month' && (
+                  <>
+                    <input type="number" className="form-control form-control-sm" style={{width:'100px'}} value={summaryYear} min={2000} max={3000} onChange={e=>setSummaryYear(parseInt(e.target.value||String(new Date().getFullYear()),10))} placeholder="Năm" />
+                    <select className="form-select form-select-sm" style={{width:'auto'}} value={summaryMonth} onChange={e=>setSummaryMonth(parseInt(e.target.value,10))}>
+                      {Array.from({length:12}, (_,i)=>i+1).map(m=> (<option key={m} value={m}>Tháng {m}</option>))}
+                    </select>
+                  </>
+                )}
+                {summaryPeriod === 'week' && (
+                  <>
+                    <input type="date" className="form-control form-control-sm" style={{width:'160px'}} value={summaryWeekStart} onChange={e=>setSummaryWeekStart(e.target.value)} placeholder="Bắt đầu" />
+                    <input type="date" className="form-control form-control-sm" style={{width:'160px'}} value={summaryWeekEnd} onChange={e=>setSummaryWeekEnd(e.target.value)} placeholder="Kết thúc" />
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="p-3">
+              {!summary && <div className="text-muted">Đang tải tóm tắt...</div>}
+              {summary && (
+                <div className="row g-3">
+                  <div className="col-12 col-md-3">
+                    <div className="panel shadow-sm border rounded-4 h-100" style={{background:'#fff'}}>
+                      <div className="panel__header fw-bold fs-6 text-secondary text-center mb-1">Khoảng thời gian</div>
+                      <div className="p-3 text-center">
+                        <div className="small text-muted">{new Date(summary.start).toLocaleDateString('vi-VN')} — {new Date(summary.end).toLocaleDateString('vi-VN')}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-12 col-md-3">
+                    <div className="panel shadow-sm border rounded-4 h-100" style={{background:'#fff'}}>
+                      <div className="panel__header fw-bold fs-6 text-secondary text-center mb-1">Lượt mượn</div>
+                      <div className="p-3 text-center">
+                        <div className="display-6 m-0 text-primary">{summary.borrowed}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-12 col-md-3">
+                    <div className="panel shadow-sm border rounded-4 h-100" style={{background:'#fff'}}>
+                      <div className="panel__header fw-bold fs-6 text-secondary text-center mb-1">Lượt trả</div>
+                      <div className="p-3 text-center">
+                        <div className="display-6 m-0 text-success">{summary.returned}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-12 col-md-3">
+                    <div className="panel shadow-sm border rounded-4 h-100" style={{background:'#fff'}}>
+                      <div className="panel__header fw-bold fs-6 text-secondary text-center mb-1">Kỳ</div>
+                      <div className="p-3 text-center">
+                        <div className="display-6 m-0 text-info">{summary.period === 'week' ? 'Tuần' : 'Tháng'}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="row g-3">
